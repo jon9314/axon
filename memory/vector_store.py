@@ -1,5 +1,7 @@
 # axon/memory/vector_store.py
 
+from typing import Optional
+
 from qdrant_client import QdrantClient, models
 import uuid
 
@@ -12,6 +14,7 @@ class VectorStore:
         """
         Initializes the VectorStore and connects to the Qdrant client.
         """
+        self.client: Optional[QdrantClient]
         try:
             self.client = QdrantClient(host=host, port=port)
             print("Successfully connected to Qdrant.")
