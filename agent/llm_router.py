@@ -2,6 +2,7 @@
 
 import requests
 import json
+from .fallback_prompt import generate_prompt, to_json
 
 class LLMRouter:
     """
@@ -19,6 +20,10 @@ class LLMRouter:
         self.server_url = server_url
         print(f"LLMRouter initialized to connect to Ollama at: {self.server_url}")
 
+    def _needs_cloud(self, prompt: str) -> bool:
+        """Simple heuristic to decide if a cloud model should be suggested."""
+        return len(prompt) > 400
+
     def get_response(self, prompt: str, model: str) -> str:
         """
         Sends a prompt to the Ollama server and returns the response.
@@ -27,22 +32,19 @@ class LLMRouter:
             prompt (str): The user's prompt.
             model (str): The name of the model to use (e.g., 'mistral', 'llama2').
         """
+        if self._needs_cloud(prompt):
+            fallback = generate_prompt(prompt)
+            return to_json(fallback)
+
         headers = {"Content-Type": "application/json"}
-        # This payload structure is specific to the Ollama /api/generate endpoint
-        data = {
-            "model": model,
-            "prompt": prompt,
-            "stream": False  # We want the full response at once
-        }
+        data = {"model": model, "prompt": prompt, "stream": False}
 
         try:
             response = requests.post(self.server_url, headers=headers, data=json.dumps(data))
-            response.raise_for_status()  # Raise an exception for bad status codes
-
+            response.raise_for_status()
             response_data = response.json()
             return response_data.get("response", "Sorry, I received an empty response from Ollama.").strip()
 
-        except requests.exceptions.RequestException as e:
-            error_message = f"Error connecting to Ollama server: {e}"
-            print(error_message)
-            return error_message
+        except requests.exceptions.RequestException:
+            fallback = generate_prompt(prompt)
+            return to_json(fallback)
