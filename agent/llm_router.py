@@ -22,6 +22,7 @@ class LLMRouter:
 
     def _needs_cloud(self, prompt: str) -> bool:
         """Simple heuristic to decide if a cloud model should be suggested."""
+
         return len(prompt) > 400
 
     def get_response(self, prompt: str, model: str) -> str:
@@ -46,5 +47,8 @@ class LLMRouter:
             return response_data.get("response", "Sorry, I received an empty response from Ollama.").strip()
 
         except requests.exceptions.RequestException:
-            fallback = generate_prompt(prompt)
+            fallback = generate_prompt(
+                prompt,
+                reason="Local model call failed; please use a cloud model.",
+            )
             return to_json(fallback)
