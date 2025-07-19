@@ -23,3 +23,5 @@ pip-delete-this-directory.txt
 # OS
 .DS_Store
 Thumbs.db
+markdown_notes/
+=1.5

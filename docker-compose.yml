@@ -12,10 +12,32 @@ services:
       - /app/.venv
     env_file:
       - .env
+    environment:
+      FILESYSTEM_MCP_URL: http://mcp_servers:9001
+      TIME_MCP_URL: http://mcp_servers:9002
+      CALC_MCP_URL: http://mcp_servers:9003
+      MARKDOWN_MCP_URL: http://mcp_servers:9004
     depends_on:
       - postgres
       - qdrant
+      - mcp_servers
     command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  mcp_servers:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "-m", "mcp_servers"]
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/.venv
+    ports:
+      - "9001:9001"
+      - "9002:9002"
+      - "9003:9003"
+      - "9004:9004"
 
   postgres:
     image: postgres:15
