@@ -4,7 +4,7 @@ import time
 try:
     import pyperclip
     import keyboard
-except Exception as e:  # pragma: no cover - optional dependency
+except Exception:  # pragma: no cover - optional dependency
     pyperclip = None
     keyboard = None
 
