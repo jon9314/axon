@@ -1,0 +1,14 @@
+facts:
+  - thread_id: default_thread
+    key: user_name
+    value: Alex
+    identity: default_user
+  - thread_id: default_thread
+    key: project_codename
+    value: Frankie
+    identity: default_user
+mcp_messages:
+  - mcp_protocol_version: "1.0"
+    tool_name: note
+    arguments:
+      text: Remind me to insulate the attic.

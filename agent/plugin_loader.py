@@ -44,3 +44,4 @@ def plugin(name: str):
         AVAILABLE_PLUGINS[name] = func
         return func
     return decorator
+

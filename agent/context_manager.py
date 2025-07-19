@@ -36,3 +36,4 @@ class ContextManager:
         """
         print(f"Context identity switched to: {identity}")
         self.identity = identity
+

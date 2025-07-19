@@ -2,6 +2,7 @@
 
 import psycopg2
 from psycopg2 import sql
+from typing import Optional
 
 class MemoryHandler:
     """
@@ -53,7 +54,9 @@ class MemoryHandler:
             """)
             self.conn.commit()
 
-    def add_fact(self, thread_id: str, key: str, value: str, identity: str = None):
+    def add_fact(
+        self, thread_id: str, key: str, value: str, identity: Optional[str] = None
+    ) -> None:
         """
         Adds or updates a fact for a given thread and identity.
         """
@@ -85,6 +88,19 @@ class MemoryHandler:
             print(f"Retrieved fact for thread {thread_id} with key {key}: {'Found' if result else 'Not Found'}")
             return result[0] if result else None
 
+    def list_facts(self, thread_id: str) -> list[tuple[str, str, str | None]]:
+        """Returns all facts for a thread."""
+        if not self.conn:
+            print("No database connection.")
+            return []
+
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "SELECT key, value, identity FROM facts WHERE thread_id = %s",
+                (thread_id,)
+            )
+            return cur.fetchall()
+
     def close_connection(self):
         """
         Closes the database connection.
@@ -92,3 +108,4 @@ class MemoryHandler:
         if self.conn:
             self.conn.close()
             print("PostgreSQL connection closed.")
+

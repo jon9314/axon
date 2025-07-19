@@ -7,11 +7,20 @@ type Message = {
   text: string;
 };
 
+type MemoryEntry = {
+  key: string;
+  value: string;
+  identity?: string;
+};
+
 function App() {
   const [messages, setMessages] = useState<Message[]>([
-    { sender: 'agent', text: "Hello! I am Axon. How can I assist you today?" }
+    { sender: 'agent', text: 'Hello! I am Axon. How can I assist you today?' },
   ]);
   const [inputValue, setInputValue] = useState('');
+  const [memoryEntries, setMemoryEntries] = useState<MemoryEntry[]>([]);
+  const [newKey, setNewKey] = useState('');
+  const [newValue, setNewValue] = useState('');
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -32,6 +41,11 @@ function App() {
       const agentResponse: Message = { sender: 'agent', text: event.data };
       setMessages(prevMessages => [...prevMessages, agentResponse]);
     };
+
+    fetch('/memory/default_thread')
+      .then((res) => res.json())
+      .then((data) => setMemoryEntries(data.facts || []))
+      .catch((err) => console.error('Failed to load memory', err));
 
     return () => {
       ws.current?.close();
@@ -61,6 +75,16 @@ function App() {
     }
   };
 
+  const addMemoryEntry = () => {
+    fetch(`/memory/default_thread?key=${encodeURIComponent(newKey)}&value=${encodeURIComponent(newValue)}`, {
+      method: 'POST',
+    }).then(() => {
+      setMemoryEntries((prev) => [...prev, { key: newKey, value: newValue }]);
+      setNewKey('');
+      setNewValue('');
+    });
+  };
+
   return (
     <div className="app-container">
       <div className="chat-view">
@@ -85,14 +109,28 @@ function App() {
       <div className="memory-sidebar">
         <h3>Agent Memory</h3>
         <ul>
-          <li>Fact: User's name is Alex.</li>
-          <li>Note: Prefers concise answers.</li>
-          <li>Fact: Project codename is "Frankie".</li>
-          <li>Note: Interested in Python and AI.</li>
+          {memoryEntries.map((m, idx) => (
+            <li key={idx}>{m.key}: {m.value}</li>
+          ))}
         </ul>
+        <div className="memory-edit">
+          <input
+            type="text"
+            placeholder="key"
+            value={newKey}
+            onChange={(e) => setNewKey(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="value"
+            value={newValue}
+            onChange={(e) => setNewValue(e.target.value)}
+          />
+          <button onClick={addMemoryEntry}>Add</button>
+        </div>
       </div>
     </div>
   );
 }
 
-export default App;
+export default App
