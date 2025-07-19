@@ -9,3 +9,4 @@ def get_os_version():
     A simple plugin that returns the current OS version.
     """
     return f"The current OS is: {platform.system()} {platform.release()}"
+

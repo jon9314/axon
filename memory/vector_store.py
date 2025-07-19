@@ -71,3 +71,4 @@ class VectorStore:
             # This can happen if the collection doesn't exist yet.
             print(f"Could not search collection '{collection_name}': {e}")
             return []
+

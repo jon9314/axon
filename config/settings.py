@@ -36,3 +36,4 @@ def load_settings() -> AppSettings:
 
 # Create a single instance that will be imported by other parts of the app
 settings = load_settings()
+
