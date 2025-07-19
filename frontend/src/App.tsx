@@ -23,6 +23,15 @@ function App() {
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const ws = useRef<WebSocket | null>(null);
+  const sendMcp = (tool: string, args: any) => {
+    if (ws.current?.readyState !== WebSocket.OPEN) return;
+    const msg = {
+      mcp_protocol_version: '1.0',
+      tool_name: tool,
+      arguments: args,
+    };
+    ws.current.send(JSON.stringify(msg));
+  };
 
   useEffect(() => {
     // --- CORRECTED WEBSOCKET URL ---
@@ -105,6 +114,10 @@ function App() {
             placeholder="Type your message..."
           />
           <button onClick={handleSendMessage}>Send</button>
+          <button onClick={() => sendMcp('time', {command: 'now'})}>Time</button>
+          <button onClick={() => sendMcp('calculator', {command: 'evaluate', expr: '2+2'})}>Calc</button>
+          <button onClick={() => sendMcp('filesystem', {command: 'list', path: '.'})}>List Files</button>
+          <button onClick={() => sendMcp('markdown_backup', {command: 'save', name: 'demo', content: 'note'})}>Save Note</button>
         </div>
       </div>
       <div className="memory-sidebar">

@@ -42,3 +42,17 @@ class MCPHandler:
         print(f"Generated MCP message for tool '{tool_name}'")
         return mcp_message
 
+
+    def handle_message(self, message: dict):
+        """Route MCP message to matching plugin and return its result."""
+        if not self.parse_message(message):
+            raise ValueError("Not an MCP message")
+
+        from agent.plugin_loader import AVAILABLE_PLUGINS
+
+        tool_name = message.get("tool_name")
+        args = message.get("arguments", {})
+        if tool_name not in AVAILABLE_PLUGINS:
+            raise ValueError(f"Unknown tool: {tool_name}")
+        plugin_info = AVAILABLE_PLUGINS[tool_name]
+        return plugin_info.func(**args)

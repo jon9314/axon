@@ -6,7 +6,10 @@ from memory.preload import preload
 from config.settings import settings
 from agent.llm_router import LLMRouter
 from agent.goal_tracker import GoalTracker
+from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
+from agent.mcp_handler import MCPHandler
 import re
+import json
 import logging
 
 # --- NEW: Configure Logging ---
@@ -26,11 +29,14 @@ app = FastAPI(
 memory_handler = MemoryHandler(db_uri=settings.database.postgres_uri)
 goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri)
 llm_router = LLMRouter()
+mcp_handler = MCPHandler()
 
 
 @app.on_event("startup")
 def startup_event() -> None:
     preload(memory_handler)
+    load_plugins()
+    logging.info(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
 
 @app.on_event("shutdown")
 def shutdown_event():
@@ -104,7 +110,20 @@ async def websocket_endpoint(websocket: WebSocket):
             response_message = ""
             remember_match = re.match(r"remember (.*) is (.*)", data, re.IGNORECASE)
 
-            if remember_match:
+            mcp_data = None
+            try:
+                import json
+                mcp_data = json.loads(data)
+            except Exception:
+                pass
+
+            if isinstance(mcp_data, dict) and mcp_handler.parse_message(mcp_data):
+                try:
+                    result = mcp_handler.handle_message(mcp_data)
+                    response_message = json.dumps(result)
+                except Exception as e:
+                    response_message = f"MCP error: {e}"
+            elif remember_match:
                 key = remember_match.group(1).strip()
                 value = remember_match.group(2).strip()
                 memory_handler.add_fact(thread_id, key, value)
