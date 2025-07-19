@@ -122,3 +122,18 @@ body, #root {
   border-radius: 8px;
   margin-bottom: 10px;
 }
+
+.memory-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.memory-item input[type="checkbox"] {
+  margin-right: 4px;
+}
+
+.memory-key {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}

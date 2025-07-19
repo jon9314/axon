@@ -37,3 +37,22 @@ class ContextManager:
         print(f"Context identity switched to: {identity}")
         self.identity = identity
 
+    def set_thread(self, thread_id: str):
+        """Switches the context to a different thread."""
+        print(f"Context thread switched to: {thread_id}")
+        self.thread_id = thread_id
+
+    def update_fact(self, key: str, value: str):
+        self.memory_handler.update_fact(
+            thread_id=self.thread_id,
+            key=key,
+            value=value,
+            identity=self.identity,
+        )
+
+    def delete_fact(self, key: str) -> bool:
+        return self.memory_handler.delete_fact(self.thread_id, key)
+
+    def set_lock(self, key: str, locked: bool) -> bool:
+        return self.memory_handler.set_lock(self.thread_id, key, locked)
+
