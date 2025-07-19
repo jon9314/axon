@@ -1,0 +1,44 @@
+# .github/workflows/lint.yml
+
+name: Lint and Type Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository's code
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the specified Python version
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Step 3: Install Poetry for dependency management
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      # Step 4: Install project dependencies using the lock file for consistency
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      # Step 5: Run the ruff linter
+      - name: Lint with ruff
+        run: |
+          poetry run ruff check .
+
+      # Step 6: Run the mypy static type checker
+      - name: Type check with mypy
+        run: |
+          poetry run mypy .
