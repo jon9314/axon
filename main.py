@@ -30,7 +30,7 @@ def cli():
     """
     # --- NEW: Load plugins on CLI startup ---
     print("Loading plugins...")
-    load_plugins()
+    load_plugins(hot_reload=True)
     print(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
     # --- END NEW ---
     
@@ -45,8 +45,8 @@ def cli():
 
             # --- NEW: Check for and execute plugins ---
             if user_input in AVAILABLE_PLUGINS:
-                plugin_function = AVAILABLE_PLUGINS[user_input]
-                result = plugin_function()
+                plugin_info = AVAILABLE_PLUGINS[user_input]
+                result = plugin_info.func()
                 print(f"Plugin '{user_input}': {result}")
             else:
                 # Placeholder for your agent's regular processing logic

@@ -11,6 +11,7 @@ type MemoryEntry = {
   key: string;
   value: string;
   identity?: string;
+  locked?: boolean;
 };
 
 function App() {
@@ -79,7 +80,7 @@ function App() {
     fetch(`/memory/default_thread?key=${encodeURIComponent(newKey)}&value=${encodeURIComponent(newValue)}`, {
       method: 'POST',
     }).then(() => {
-      setMemoryEntries((prev) => [...prev, { key: newKey, value: newValue }]);
+      setMemoryEntries((prev) => [...prev, { key: newKey, value: newValue, locked: false }]);
       setNewKey('');
       setNewValue('');
     });
@@ -110,7 +111,39 @@ function App() {
         <h3>Agent Memory</h3>
         <ul>
           {memoryEntries.map((m, idx) => (
-            <li key={idx}>{m.key}: {m.value}</li>
+            <li key={idx} className="memory-item">
+              <input
+                value={m.value}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setMemoryEntries(prev => prev.map((p,i) => i===idx ? {...p, value: val} : p));
+                }}
+                onBlur={(e) => {
+                  fetch(`/memory/default_thread?key=${encodeURIComponent(m.key)}&value=${encodeURIComponent(e.target.value)}`, {
+                    method: 'PUT',
+                  });
+                }}
+              />
+              <label>
+                <input
+                  type="checkbox"
+                  checked={m.locked}
+                  onChange={(e) => {
+                    fetch(`/memory/default_thread/${encodeURIComponent(m.key)}/lock?locked=${e.target.checked}`, { method: 'POST' })
+                      .then(() => {
+                        setMemoryEntries(prev => prev.map((p,i)=> i===idx ? {...p, locked: e.target.checked} : p));
+                      });
+                  }}
+                />
+                lock
+              </label>
+              <button onClick={() => {
+                fetch(`/memory/default_thread/${encodeURIComponent(m.key)}`, { method: 'DELETE' })
+                  .then(res => res.json())
+                  .then(() => setMemoryEntries(prev => prev.filter((_,i)=> i!==idx)));
+              }}>Delete</button>
+              <span className="memory-key">{m.key}</span>
+            </li>
           ))}
         </ul>
         <div className="memory-edit">

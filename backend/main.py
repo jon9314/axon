@@ -5,6 +5,7 @@ from memory.memory_handler import MemoryHandler
 from memory.preload import preload
 from config.settings import settings
 from agent.llm_router import LLMRouter
+from agent.goal_tracker import GoalTracker
 import re
 import logging
 
@@ -23,6 +24,7 @@ app = FastAPI(
 
 # Instantiate the handlers
 memory_handler = MemoryHandler(db_uri=settings.database.postgres_uri)
+goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri)
 llm_router = LLMRouter()
 
 
@@ -43,13 +45,50 @@ async def read_root():
 @app.get("/memory/{thread_id}")
 async def list_memory(thread_id: str):
     facts = memory_handler.list_facts(thread_id)
-    return {"facts": [{"key": k, "value": v, "identity": i} for k, v, i in facts]}
+    return {
+        "facts": [
+            {"key": key, "value": val, "identity": ident, "locked": locked}
+            for key, val, ident, locked in facts
+        ]
+    }
 
 
 @app.post("/memory/{thread_id}")
 async def add_memory(thread_id: str, key: str, value: str, identity: str | None = None):
     memory_handler.add_fact(thread_id, key, value, identity)
     return {"status": "ok"}
+
+@app.put("/memory/{thread_id}")
+async def update_memory(thread_id: str, key: str, value: str, identity: str | None = None):
+    memory_handler.update_fact(thread_id, key, value, identity)
+    return {"status": "ok"}
+
+@app.delete("/memory/{thread_id}/{key}")
+async def delete_memory(thread_id: str, key: str):
+    deleted = memory_handler.delete_fact(thread_id, key)
+    return {"deleted": deleted}
+
+@app.post("/memory/{thread_id}/{key}/lock")
+async def lock_memory(thread_id: str, key: str, locked: bool = True):
+    changed = memory_handler.set_lock(thread_id, key, locked)
+    return {"locked": changed}
+
+
+@app.post("/goals/{thread_id}")
+async def add_goal(thread_id: str, text: str, identity: str | None = None):
+    goal_tracker.add_goal(thread_id, text, identity)
+    return {"status": "ok"}
+
+
+@app.get("/goals/{thread_id}")
+async def list_goals(thread_id: str):
+    goals = goal_tracker.list_goals(thread_id)
+    return {
+        "goals": [
+            {"id": g_id, "text": text, "completed": done, "identity": ident}
+            for g_id, text, done, ident in goals
+        ]
+    }
 
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):

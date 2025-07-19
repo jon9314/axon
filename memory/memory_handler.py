@@ -38,6 +38,7 @@ class MemoryHandler:
                     key VARCHAR(255) NOT NULL,
                     value TEXT,
                     identity VARCHAR(255),
+                    locked BOOLEAN DEFAULT FALSE,
                     UNIQUE(thread_id, key)
                 );
             """)
@@ -48,6 +49,9 @@ class MemoryHandler:
                 BEGIN
                     IF NOT EXISTS (SELECT FROM pg_attribute WHERE attrelid = 'facts'::regclass AND attname = 'identity' AND NOT attisdropped) THEN
                         ALTER TABLE facts ADD COLUMN identity VARCHAR(255);
+                    END IF;
+                    IF NOT EXISTS (SELECT FROM pg_attribute WHERE attrelid = 'facts'::regclass AND attname = 'locked' AND NOT attisdropped) THEN
+                        ALTER TABLE facts ADD COLUMN locked BOOLEAN DEFAULT FALSE;
                     END IF;
                 END
                 $$;
@@ -88,18 +92,54 @@ class MemoryHandler:
             print(f"Retrieved fact for thread {thread_id} with key {key}: {'Found' if result else 'Not Found'}")
             return result[0] if result else None
 
-    def list_facts(self, thread_id: str) -> list[tuple[str, str, str | None]]:
-        """Returns all facts for a thread."""
+    def list_facts(self, thread_id: str) -> list[tuple[str, str, str | None, bool]]:
+        """Returns all facts for a thread including lock state."""
         if not self.conn:
             print("No database connection.")
             return []
 
         with self.conn.cursor() as cur:
             cur.execute(
-                "SELECT key, value, identity FROM facts WHERE thread_id = %s",
+                "SELECT key, value, identity, locked FROM facts WHERE thread_id = %s",
                 (thread_id,)
             )
             return cur.fetchall()
+
+    def update_fact(
+        self, thread_id: str, key: str, value: str, identity: Optional[str] = None
+    ) -> None:
+        if not self.conn:
+            return
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "UPDATE facts SET value=%s, identity=%s WHERE thread_id=%s AND key=%s",
+                (value, identity, thread_id, key),
+            )
+            self.conn.commit()
+
+    def delete_fact(self, thread_id: str, key: str) -> bool:
+        if not self.conn:
+            return False
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM facts WHERE thread_id=%s AND key=%s AND locked=FALSE",
+                (thread_id, key),
+            )
+            deleted = cur.rowcount > 0
+            self.conn.commit()
+            return deleted
+
+    def set_lock(self, thread_id: str, key: str, locked: bool) -> bool:
+        if not self.conn:
+            return False
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "UPDATE facts SET locked=%s WHERE thread_id=%s AND key=%s",
+                (locked, thread_id, key),
+            )
+            changed = cur.rowcount > 0
+            self.conn.commit()
+            return changed
 
     def close_connection(self):
         """
