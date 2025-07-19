@@ -9,7 +9,6 @@ from agent.goal_tracker import GoalTracker
 from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from agent.mcp_handler import MCPHandler
 import re
-import json
 import logging
 
 # --- NEW: Configure Logging ---
