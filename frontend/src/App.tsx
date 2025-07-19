@@ -22,6 +22,8 @@ function App() {
   const [memoryEntries, setMemoryEntries] = useState<MemoryEntry[]>([]);
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
+  const [cloudPrompt, setCloudPrompt] = useState<{model: string; prompt: string} | null>(null);
+  const [pasteValue, setPasteValue] = useState('');
   const ws = useRef<WebSocket | null>(null);
   const sendMcp = (tool: string, args: any) => {
     if (ws.current?.readyState !== WebSocket.OPEN) return;
@@ -48,6 +50,17 @@ function App() {
     ws.current.onerror = (error) => console.error("WebSocket Error: ", error);
 
     ws.current.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'cloud_prompt') {
+          setCloudPrompt({ model: data.model, prompt: data.prompt });
+          const agentResponse: Message = { sender: 'agent', text: 'Remote model suggested. Copy the prompt below.' };
+          setMessages(prev => [...prev, agentResponse]);
+          return;
+        }
+      } catch (_) {
+        // not JSON
+      }
       const agentResponse: Message = { sender: 'agent', text: event.data };
       setMessages(prevMessages => [...prevMessages, agentResponse]);
     };
@@ -119,6 +132,29 @@ function App() {
           <button onClick={() => sendMcp('filesystem', {command: 'list', path: '.'})}>List Files</button>
           <button onClick={() => sendMcp('markdown_backup', {command: 'save', name: 'demo', content: 'note'})}>Save Note</button>
         </div>
+        {cloudPrompt && (
+          <div className="cloud-prompt">
+            <p>Use {cloudPrompt.model} with the prompt below, then paste the answer:</p>
+            <textarea readOnly value={cloudPrompt.prompt} />
+            <textarea
+              placeholder="Paste model reply here"
+              value={pasteValue}
+              onChange={(e) => setPasteValue(e.target.value)}
+            />
+            <button onClick={() => {
+              if (ws.current?.readyState === WebSocket.OPEN) {
+                ws.current.send(JSON.stringify({
+                  type: 'pasteback',
+                  model: cloudPrompt.model,
+                  prompt: cloudPrompt.prompt,
+                  response: pasteValue,
+                }));
+                setCloudPrompt(null);
+                setPasteValue('');
+              }
+            }}>Submit</button>
+          </div>
+        )}
       </div>
       <div className="memory-sidebar">
         <h3>Agent Memory</h3>

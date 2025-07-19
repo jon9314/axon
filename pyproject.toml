@@ -18,6 +18,8 @@ pyyaml = "^6.0.1"
 typer = "^0.9.0"
 requests = "^2.31.0"
 httpx = "^0.27.0"
+pyperclip = "^1.8.2"
+keyboard = "^0.13.5"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.2"

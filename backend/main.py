@@ -8,6 +8,7 @@ from agent.llm_router import LLMRouter
 from agent.goal_tracker import GoalTracker
 from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from agent.mcp_handler import MCPHandler
+from agent.pasteback_handler import PastebackHandler
 import re
 import logging
 
@@ -29,6 +30,7 @@ memory_handler = MemoryHandler(db_uri=settings.database.postgres_uri)
 goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri)
 llm_router = LLMRouter()
 mcp_handler = MCPHandler()
+pasteback_handler = PastebackHandler(memory_handler)
 
 
 @app.on_event("startup")
@@ -116,7 +118,15 @@ async def websocket_endpoint(websocket: WebSocket):
             except Exception:
                 pass
 
-            if isinstance(mcp_data, dict) and mcp_handler.parse_message(mcp_data):
+            if isinstance(mcp_data, dict) and mcp_data.get("type") == "pasteback":
+                pasteback_handler.store(
+                    thread_id,
+                    mcp_data.get("prompt", ""),
+                    mcp_data.get("response", ""),
+                    mcp_data.get("model", "gpt"),
+                )
+                response_message = "Pasteback stored."
+            elif isinstance(mcp_data, dict) and mcp_handler.parse_message(mcp_data):
                 try:
                     result = mcp_handler.handle_message(mcp_data)
                     response_message = json.dumps(result)
