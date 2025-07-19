@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 from mcp_servers.filesystem_server import app
-import os
 
 client = TestClient(app)
 
