@@ -38,3 +38,10 @@ docker compose up --build
 The frontend will be available on `http://localhost:3000` and the backend on
 `http://localhost:8000`.
 
+## Remote model fallback
+
+Axon can suggest prompts for hosted models like GPT-4o or Claude when the local
+LLM appears inadequate. The UI will display the generated prompt and provide a
+text area for pasting back the remote response. For quick manual pasting you can
+run `python scripts/clipboard_watch.py` to monitor your clipboard.
+
