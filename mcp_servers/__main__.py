@@ -13,7 +13,8 @@ SERVERS = [
 ]
 
 def run(app, port):
-    uvicorn.run(app, host="127.0.0.1", port=port)
+    # Listen on all interfaces so the backend container can reach the servers
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
     processes = []
