@@ -1,8 +1,5 @@
 import time
-from typing import Protocol, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from memory.memory_handler import MemoryHandler
+from typing import Protocol
 
 
 class MemoryLike(Protocol):

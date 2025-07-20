@@ -1,4 +1,4 @@
-from agent.fallback_prompt import suggest_model, generate_prompt
+from agent.fallback_prompt import suggest_model
 from agent.llm_router import LLMRouter
 import json
 
