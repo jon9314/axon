@@ -21,6 +21,7 @@ httpx = "^0.27.0"
 pyperclip = "^1.8.2"
 keyboard = "^0.13.5"
 plyer = "^2.1.0"
+qwen-agent = "0.0.27"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.2"
