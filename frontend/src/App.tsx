@@ -10,6 +10,7 @@ type Message = {
 type MemoryEntry = {
   key: string;
   value: string;
+  tags?: string[];
   identity?: string;
   locked?: boolean;
 };
@@ -22,6 +23,7 @@ function App() {
   const [memoryEntries, setMemoryEntries] = useState<MemoryEntry[]>([]);
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
+  const [newTags, setNewTags] = useState('');
   const [cloudPrompt, setCloudPrompt] = useState<{model: string; prompt: string} | null>(null);
   const [pasteValue, setPasteValue] = useState('');
   const ws = useRef<WebSocket | null>(null);
@@ -99,12 +101,18 @@ function App() {
   };
 
   const addMemoryEntry = () => {
-    fetch(`/memory/default_thread?key=${encodeURIComponent(newKey)}&value=${encodeURIComponent(newValue)}`, {
+    const params =
+      `key=${encodeURIComponent(newKey)}&value=${encodeURIComponent(newValue)}&tags=${encodeURIComponent(newTags)}`;
+    fetch(`/memory/default_thread?${params}`, {
       method: 'POST',
     }).then(() => {
-      setMemoryEntries((prev) => [...prev, { key: newKey, value: newValue, locked: false }]);
+      setMemoryEntries((prev) => [
+        ...prev,
+        { key: newKey, value: newValue, tags: newTags.split(',').filter(t => t), locked: false },
+      ]);
       setNewKey('');
       setNewValue('');
+      setNewTags('');
     });
   };
 
@@ -168,9 +176,22 @@ function App() {
                   setMemoryEntries(prev => prev.map((p,i) => i===idx ? {...p, value: val} : p));
                 }}
                 onBlur={(e) => {
-                  fetch(`/memory/default_thread?key=${encodeURIComponent(m.key)}&value=${encodeURIComponent(e.target.value)}`, {
+                  const params = `key=${encodeURIComponent(m.key)}&value=${encodeURIComponent(e.target.value)}&tags=${encodeURIComponent((m.tags||[]).join(','))}`;
+                  fetch(`/memory/default_thread?${params}`, {
                     method: 'PUT',
                   });
+                }}
+              />
+              <input
+                value={(m.tags || []).join(',')}
+                placeholder="tags"
+                onChange={(e) => {
+                  const tags = e.target.value.split(',').filter(t => t);
+                  setMemoryEntries(prev => prev.map((p,i) => i===idx ? {...p, tags} : p));
+                }}
+                onBlur={(e) => {
+                  const params = `key=${encodeURIComponent(m.key)}&value=${encodeURIComponent(m.value)}&tags=${encodeURIComponent(e.target.value)}`;
+                  fetch(`/memory/default_thread?${params}`, { method: 'PUT' });
                 }}
               />
               <label>
@@ -207,6 +228,12 @@ function App() {
             placeholder="value"
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="tags"
+            value={newTags}
+            onChange={(e) => setNewTags(e.target.value)}
           />
           <button onClick={addMemoryEntry}>Add</button>
         </div>

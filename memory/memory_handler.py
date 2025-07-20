@@ -2,7 +2,7 @@
 
 import psycopg2
 from psycopg2 import sql
-from typing import Optional
+from typing import Optional, Iterable
 
 class MemoryHandler:
     """
@@ -39,6 +39,7 @@ class MemoryHandler:
                     value TEXT,
                     identity VARCHAR(255),
                     locked BOOLEAN DEFAULT FALSE,
+                    tags TEXT,
                     UNIQUE(thread_id, key)
                 );
             """)
@@ -53,13 +54,21 @@ class MemoryHandler:
                     IF NOT EXISTS (SELECT FROM pg_attribute WHERE attrelid = 'facts'::regclass AND attname = 'locked' AND NOT attisdropped) THEN
                         ALTER TABLE facts ADD COLUMN locked BOOLEAN DEFAULT FALSE;
                     END IF;
+                    IF NOT EXISTS (SELECT FROM pg_attribute WHERE attrelid = 'facts'::regclass AND attname = 'tags' AND NOT attisdropped) THEN
+                        ALTER TABLE facts ADD COLUMN tags TEXT;
+                    END IF;
                 END
                 $$;
             """)
             self.conn.commit()
 
     def add_fact(
-        self, thread_id: str, key: str, value: str, identity: Optional[str] = None
+        self,
+        thread_id: str,
+        key: str,
+        value: str,
+        identity: Optional[str] = None,
+        tags: Optional[Iterable[str]] = None,
     ) -> None:
         """
         Adds or updates a fact for a given thread and identity.
@@ -68,14 +77,20 @@ class MemoryHandler:
             print("No database connection.")
             return
 
+        tags_str = ",".join(tags) if tags else None
         with self.conn.cursor() as cur:
-            query = sql.SQL("""
-                INSERT INTO facts (thread_id, key, value, identity) VALUES (%s, %s, %s, %s)
-                ON CONFLICT (thread_id, key) DO UPDATE SET value = EXCLUDED.value, identity = EXCLUDED.identity;
-            """)
-            cur.execute(query, (thread_id, key, value, identity))
+            query = sql.SQL(
+                """
+                INSERT INTO facts (thread_id, key, value, identity, tags) VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (thread_id, key) DO UPDATE SET value = EXCLUDED.value, identity = EXCLUDED.identity, tags = EXCLUDED.tags;
+            """
+            )
+            cur.execute(query, (thread_id, key, value, identity, tags_str))
             self.conn.commit()
-            print(f"Added/Updated fact for thread {thread_id}: {key} = {value} (Identity: {identity})")
+            print(
+                f"Added/Updated fact for thread {thread_id}: {key} = {value} "
+                f"(Identity: {identity}, Tags: {tags})"
+            )
 
     def get_fact(self, thread_id: str, key: str, include_identity: bool = False):
         """Retrieve a fact and optionally its identity for a given thread."""
@@ -97,28 +112,48 @@ class MemoryHandler:
             value, ident = result
             return (value, ident) if include_identity else value
 
-    def list_facts(self, thread_id: str) -> list[tuple[str, str, str | None, bool]]:
-        """Returns all facts for a thread including lock state."""
+    def list_facts(
+        self, thread_id: str, tag: Optional[str] = None
+    ) -> list[tuple[str, str, str | None, bool, list[str]]]:
+        """Returns all facts for a thread including lock state and tags.
+
+        If ``tag`` is provided, only facts containing that tag are returned.
+        """
         if not self.conn:
             print("No database connection.")
             return []
 
         with self.conn.cursor() as cur:
-            cur.execute(
-                "SELECT key, value, identity, locked FROM facts WHERE thread_id = %s",
-                (thread_id,)
+            query = (
+                "SELECT key, value, identity, locked, tags FROM facts WHERE thread_id = %s"
             )
-            return cur.fetchall()
+            params = [thread_id]
+            if tag:
+                query += " AND tags ILIKE %s"
+                params.append(f"%{tag}%")
+            cur.execute(query, params)
+            rows = cur.fetchall()
+            result = []
+            for key, value, identity, locked, tags_str in rows:
+                tags_list = [t for t in tags_str.split(',') if t] if tags_str else []
+                result.append((key, value, identity, locked, tags_list))
+            return result
 
     def update_fact(
-        self, thread_id: str, key: str, value: str, identity: Optional[str] = None
+        self,
+        thread_id: str,
+        key: str,
+        value: str,
+        identity: Optional[str] = None,
+        tags: Optional[Iterable[str]] = None,
     ) -> None:
         if not self.conn:
             return
+        tags_str = ",".join(tags) if tags else None
         with self.conn.cursor() as cur:
             cur.execute(
-                "UPDATE facts SET value=%s, identity=%s WHERE thread_id=%s AND key=%s",
-                (value, identity, thread_id, key),
+                "UPDATE facts SET value=%s, identity=%s, tags=%s WHERE thread_id=%s AND key=%s",
+                (value, identity, tags_str, thread_id, key),
             )
             self.conn.commit()
 
