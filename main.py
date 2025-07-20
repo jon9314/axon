@@ -4,6 +4,12 @@ import typer
 import uvicorn
 import asyncio
 from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
+from memory.user_profile import UserProfileManager
+from agent.reminder import ReminderManager
+
+# Global managers used across commands
+profile_manager = UserProfileManager()
+reminder_manager = ReminderManager()
 
 app = typer.Typer(
     name="axon",
@@ -77,6 +83,20 @@ def headless():
         print("\nStopping headless mode.")
     finally:
         print("Headless mode finished.")
+
+
+@app.command()
+def set_profile(identity: str, persona: str = "assistant", tone: str = "neutral", email: str | None = None) -> None:
+    """Create or update a user profile."""
+    profile_manager.set_profile(identity, persona=persona, tone=tone, email=email)
+    print(f"Profile saved for {identity}.")
+
+
+@app.command()
+def remind(message: str, delay: int = 60) -> None:
+    """Schedule a reminder in seconds."""
+    reminder_manager.schedule(message, delay)
+    print(f"Reminder set in {delay} seconds: {message}")
 
 
 if __name__ == "__main__":

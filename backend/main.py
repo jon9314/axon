@@ -9,6 +9,7 @@ from agent.goal_tracker import GoalTracker
 from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from agent.mcp_handler import MCPHandler
 from agent.pasteback_handler import PastebackHandler
+from memory.user_profile import UserProfileManager
 import re
 import logging
 
@@ -31,6 +32,7 @@ goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri)
 llm_router = LLMRouter()
 mcp_handler = MCPHandler()
 pasteback_handler = PastebackHandler(memory_handler)
+profile_manager = UserProfileManager(db_uri=settings.database.postgres_uri)
 
 
 @app.on_event("startup")
@@ -97,6 +99,18 @@ async def list_goals(thread_id: str):
         ]
     }
 
+
+@app.get("/profiles/{identity}")
+async def get_profile(identity: str):
+    profile = profile_manager.get_profile(identity)
+    return profile or {}
+
+
+@app.post("/profiles/{identity}")
+async def set_profile(identity: str, persona: str = "assistant", tone: str = "neutral", email: str | None = None):
+    profile_manager.set_profile(identity, persona=persona, tone=tone, email=email)
+    return {"status": "ok"}
+
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -148,7 +162,16 @@ async def websocket_endpoint(websocket: WebSocket):
                     response_message = f"I don't have a memory for '{key}'."
             else:
                 logging.info("No command recognized. Routing to LLM.")
-                response_message = llm_router.get_response(data, model=settings.llm.default_local_model)
+                identity = "default_user"
+                profile = profile_manager.get_profile(identity)
+                persona = profile.get("persona") if profile else None
+                tone = profile.get("tone") if profile else None
+                response_message = llm_router.get_response(
+                    data,
+                    model=settings.llm.default_local_model,
+                    persona=persona,
+                    tone=tone,
+                )
 
             logging.info(f"Sending response: '{response_message}'")
             await websocket.send_text(response_message)
