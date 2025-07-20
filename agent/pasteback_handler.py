@@ -1,10 +1,22 @@
 import time
-from memory.memory_handler import MemoryHandler
+from typing import Protocol, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from memory.memory_handler import MemoryHandler
+
+
+class MemoryLike(Protocol):
+    """Minimal interface needed from MemoryHandler."""
+
+    def add_fact(
+        self, thread_id: str, key: str, value: str, identity: str | None = None
+    ) -> None:
+        ...
 
 class PastebackHandler:
     """Store remote model responses in memory."""
 
-    def __init__(self, memory_handler: MemoryHandler):
+    def __init__(self, memory_handler: MemoryLike):
         self.memory_handler = memory_handler
 
     def store(self, thread_id: str, prompt: str, response: str, model: str = "gpt") -> None:
