@@ -2,20 +2,24 @@
 
 Axon supports simple Python plugins that can add new commands or actions. Plugins live in the `plugins/` folder and are discovered at startup.
 
-Each plugin defines a function decorated with `@plugin` from `agent.plugin_loader`. Metadata such as name, description and usage are provided to help the agent advertise available skills.
+Plugins are implemented as [Qwen-Agent](https://github.com/QwenLM/Qwen-Agent) tools by subclassing `BaseTool` and registering with `register_tool`.
 
 ```python
-# plugins/echo.py
-from agent.plugin_loader import plugin
+from qwen_agent.tools.base import BaseTool, register_tool
 
-@plugin(
-    name="echo",
-    description="Echo back the provided text",
-    usage="echo('hello')"
-)
-def echo(text: str) -> str:
-    return text
+@register_tool("echo")
+class EchoTool(BaseTool):
+    description = "Echo back the provided text"
+    parameters = [
+        {"name": "text", "type": "string", "description": "Text to echo", "required": True}
+    ]
+
+    def call(self, params, **kwargs):
+        args = self._verify_json_format_args(params)
+        return args["text"]
 ```
+
+For backwards compatibility, plugins may still expose a simple function decorated with `@plugin` that calls the tool's `call()` method.
 
 Restart the CLI (`python main.py cli`) or the web backend to load new or changed plugins. During development the loader hot‑reloads modules so edits take effect immediately.
 
