@@ -1,60 +1,79 @@
-# axon/agent/llm_router.py
+"""LLM router integrating Qwen-Agent."""
 
-import requests
-import json
+from __future__ import annotations
+
+from typing import Any, List, Dict, Iterable
+
+from qwen_agent.agents import Assistant
+from qwen_agent.tools import TOOL_REGISTRY
+
 from .fallback_prompt import generate_prompt, to_json
 
-class LLMRouter:
-    """
-    Handles routing prompts to a local Ollama server.
-    """
-    def __init__(self, server_url: str = "http://192.168.1.148:11434/api/generate"):
-        """
-        Initializes the LLMRouter with the URL for the Ollama server.
 
-        Args:
-            server_url (str): The URL of the Ollama server's generate endpoint.
-                              'host.docker.internal' is a special DNS name that
-                              Docker containers can use to connect to the host machine.
-        """
-        self.server_url = server_url
-        print(f"LLMRouter initialized to connect to Ollama at: {self.server_url}")
+class LLMRouter:
+    """Route prompts through a local Qwen-Agent assistant."""
+
+    def __init__(self, model: str | None = None) -> None:
+        """Create the assistant using Qwen3 and registered tools."""
+
+        self.model = model or "Qwen/Qwen3-4B-Instruct"
+        self.assistant: Assistant | None = None
+
+    def _ensure_assistant(self) -> Assistant:
+        """Lazily create the Qwen-Agent assistant."""
+        if self.assistant is None:
+            tool_names = list(TOOL_REGISTRY.keys())
+            self.assistant = Assistant(
+                function_list=tool_names,
+                llm={"model": self.model, "model_type": "transformers"},
+            )
+        return self.assistant
 
     def _needs_cloud(self, prompt: str) -> bool:
         """Simple heuristic to decide if a cloud model should be suggested."""
-
         return len(prompt) > 400
 
-    def get_response(self, prompt: str, model: str, persona: str | None = None, tone: str | None = None) -> str:
-        """
-        Sends a prompt to the Ollama server and returns the response.
+    def _extract_text(self, response: Iterable[Dict[str, Any]] | Iterable[Any]) -> str:
+        """Return the last assistant message text."""
+        messages = list(response)
+        if not messages:
+            return ""
+        last = messages[-1]
+        if isinstance(last, dict):
+            return (last.get("content") or "").strip()
+        return (getattr(last, "content", "") or "").strip()
 
-        Args:
-            prompt (str): The user's prompt.
-            model (str): The name of the model to use (e.g., 'mistral', 'llama2').
-        """
+    def get_response(
+        self,
+        prompt: str,
+        model: str,
+        persona: str | None = None,
+        tone: str | None = None,
+        history: List[Dict[str, str]] | None = None,
+    ) -> str:
+        """Return the assistant reply or fallback suggestion."""
         if self._needs_cloud(prompt):
             fallback = generate_prompt(prompt)
             return to_json(fallback)
 
+        messages: List[Dict[str, str]] = history[:] if history else []
         if persona or tone:
-            style_parts = []
+            styles = []
             if persona:
-                style_parts.append(f"persona:{persona}")
+                styles.append(f"persona:{persona}")
             if tone:
-                style_parts.append(f"tone:{tone}")
-            prompt = f"[{','.join(style_parts)}] {prompt}"
-
-        headers = {"Content-Type": "application/json"}
-        data = {"model": model, "prompt": prompt, "stream": False}
+                styles.append(f"tone:{tone}")
+            messages.append({"role": "system", "content": f"[{','.join(styles)}]"})
+        messages.append({"role": "user", "content": prompt})
 
         try:
-            response = requests.post(self.server_url, headers=headers, data=json.dumps(data))
-            response.raise_for_status()
-            response_data = response.json()
-            return response_data.get("response", "Sorry, I received an empty response from Ollama.").strip()
-
-        except requests.exceptions.RequestException:
+            assistant = self._ensure_assistant()
+            output = assistant.run_nonstream(messages)
+            text = self._extract_text(output)
+            if text:
+                return text
+            return "Sorry, I received an empty response from Qwen3.".strip()
+        except Exception:
             fallback = generate_prompt(
                 prompt,
                 reason="Local model call failed; please use a cloud model.",
