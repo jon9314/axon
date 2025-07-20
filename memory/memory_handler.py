@@ -77,20 +77,25 @@ class MemoryHandler:
             self.conn.commit()
             print(f"Added/Updated fact for thread {thread_id}: {key} = {value} (Identity: {identity})")
 
-    def get_fact(self, thread_id: str, key: str):
-        """
-        Retrieves a fact from the database for a given thread and key.
-        """
+    def get_fact(self, thread_id: str, key: str, include_identity: bool = False):
+        """Retrieve a fact and optionally its identity for a given thread."""
         if not self.conn:
             print("No database connection.")
             return None
 
         with self.conn.cursor() as cur:
-            query = sql.SQL("SELECT value FROM facts WHERE thread_id = %s AND key = %s")
+            query = sql.SQL(
+                "SELECT value, identity FROM facts WHERE thread_id = %s AND key = %s"
+            )
             cur.execute(query, (thread_id, key))
             result = cur.fetchone()
-            print(f"Retrieved fact for thread {thread_id} with key {key}: {'Found' if result else 'Not Found'}")
-            return result[0] if result else None
+            print(
+                f"Retrieved fact for thread {thread_id} with key {key}: {'Found' if result else 'Not Found'}"
+            )
+            if not result:
+                return None
+            value, ident = result
+            return (value, ident) if include_identity else value
 
     def list_facts(self, thread_id: str) -> list[tuple[str, str, str | None, bool]]:
         """Returns all facts for a thread including lock state."""
