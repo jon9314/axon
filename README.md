@@ -46,3 +46,16 @@ text area for pasting back the remote response. Press **Submit** after pasting
 to store the result in memory. For quick manual pasting you can run
 `python scripts/clipboard_watch.py` to monitor your clipboard.
 
+
+## Documentation
+
+- [docs/plugins.md](docs/plugins.md) explains how to create new plugins.
+- [docs/mcp_setup.md](docs/mcp_setup.md) covers running the MCP helper services.
+- [docs/models.md](docs/models.md) shows how to change the default model.
+
+Example local configuration files are available in `.env.example` and `config/settings.example.yaml`.
+
+## Roadmap progress
+
+Phase 0 has been completed and the Phase 1 MVP scaffold is implemented. See [phases/roadmap.md](phases/roadmap.md) for upcoming work.
+

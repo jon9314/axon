@@ -13,20 +13,20 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 
 ---
 
-## 🚧 Phase 1: Core MVP Scaffold
+## ✅ Phase 1: Core MVP Scaffold (Complete)
 **Goal:** Local-only chat agent with working memory and UI
 
-- [ ] `main.py`: Bootloader with CLI, web, and headless modes
-- [ ] `settings.yaml` and `.env.example` scaffolds
-- [ ] `memory_handler.py`: PostgreSQL fact storage
-- [ ] `vector_store.py`: Qdrant connection with hybrid retrieval
-- [ ] `llm_router.py`: local model selector and fallback handler
-- [ ] `mcp_handler.py`: parse/generate MCP messages
-- [ ] Sample facts and MCP messages in memory
-- [ ] Frontend: React split-pane (chat + memory)
-- [ ] Backend: FastAPI API endpoints + WebSocket
-- [ ] Docker Compose: Postgres + Qdrant + backend + frontend
-- [ ] CI: GitHub Actions with mypy + ruff checks
+- [x] `main.py`: Bootloader with CLI, web, and headless modes
+- [x] `settings.yaml` and `.env.example` scaffolds
+- [x] `memory_handler.py`: PostgreSQL fact storage
+- [x] `vector_store.py`: Qdrant connection with hybrid retrieval
+- [x] `llm_router.py`: local model selector and fallback handler
+- [x] `mcp_handler.py`: parse/generate MCP messages
+- [x] Sample facts and MCP messages in memory
+- [x] Frontend: React split-pane (chat + memory)
+- [x] Backend: FastAPI API endpoints + WebSocket
+- [x] Docker Compose: Postgres + Qdrant + backend + frontend
+- [x] CI: GitHub Actions with mypy + ruff checks
 
 ---
 
