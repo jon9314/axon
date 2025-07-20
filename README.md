@@ -64,6 +64,13 @@ to store the result in memory. For quick manual pasting you can run
 
 Example local configuration files are available in `.env.example` and `config/settings.example.yaml`.
 
+## Qwen-Agent
+
+Axon depends on [Qwen-Agent](https://github.com/QwenLM/Qwen-Agent) to provide
+tool-calling capabilities. The Qwen-Agent repository includes several usage
+examples such as the **Qwen3 Tool-call Demo** found in
+`examples/assistant_qwen3.py`.
+
 ## Roadmap progress
 
 Phase 0 has been completed and the Phase 1 MVP scaffold is implemented. See [phases/roadmap.md](phases/roadmap.md) for upcoming work.

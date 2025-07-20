@@ -1,5 +1,7 @@
 # axon/main.py
 
+from typing import Optional
+
 import typer
 import uvicorn
 import asyncio
@@ -87,7 +89,7 @@ def headless():
 
 
 @app.command()
-def set_profile(identity: str, persona: str = "assistant", tone: str = "neutral", email: str | None = None) -> None:
+def set_profile(identity: str, persona: str = "assistant", tone: str = "neutral", email: Optional[str] = None) -> None:
     """Create or update a user profile."""
     profile_manager.set_profile(identity, persona=persona, tone=tone, email=email)
     print(f"Profile saved for {identity}.")
