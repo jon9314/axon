@@ -10,7 +10,7 @@ def test_suggest_model():
 
 
 def test_llm_router_cloud_prompt_on_long_input():
-    router = LLMRouter(server_url="http://invalid")
+    router = LLMRouter()
     long_msg = "x" * 500
     result = router.get_response(long_msg, model="local")
     data = json.loads(result)
