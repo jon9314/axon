@@ -94,8 +94,31 @@ async def list_goals(thread_id: str):
     goals = goal_tracker.list_goals(thread_id)
     return {
         "goals": [
-            {"id": g_id, "text": text, "completed": done, "identity": ident}
-            for g_id, text, done, ident in goals
+            {
+                "id": g_id,
+                "text": text,
+                "completed": done,
+                "identity": ident,
+                "deferred": deferred,
+            }
+            for g_id, text, done, ident, deferred in goals
+        ]
+    }
+
+
+@app.get("/goals/{thread_id}/deferred")
+async def list_deferred(thread_id: str):
+    goals = goal_tracker.list_deferred_goals(thread_id)
+    return {
+        "goals": [
+            {
+                "id": g_id,
+                "text": text,
+                "completed": done,
+                "identity": ident,
+                "deferred": deferred,
+            }
+            for g_id, text, done, ident, deferred in goals
         ]
     }
 
