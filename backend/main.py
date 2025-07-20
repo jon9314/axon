@@ -52,24 +52,44 @@ async def read_root():
 
 
 @app.get("/memory/{thread_id}")
-async def list_memory(thread_id: str):
-    facts = memory_handler.list_facts(thread_id)
+async def list_memory(thread_id: str, tag: str | None = None):
+    facts = memory_handler.list_facts(thread_id, tag)
     return {
         "facts": [
-            {"key": key, "value": val, "identity": ident, "locked": locked}
-            for key, val, ident, locked in facts
+            {
+                "key": key,
+                "value": val,
+                "identity": ident,
+                "locked": locked,
+                "tags": tags,
+            }
+            for key, val, ident, locked, tags in facts
         ]
     }
 
 
 @app.post("/memory/{thread_id}")
-async def add_memory(thread_id: str, key: str, value: str, identity: str | None = None):
-    memory_handler.add_fact(thread_id, key, value, identity)
+async def add_memory(
+    thread_id: str,
+    key: str,
+    value: str,
+    identity: str | None = None,
+    tags: str | None = None,
+):
+    tag_list = [t for t in tags.split(',') if t] if tags else None
+    memory_handler.add_fact(thread_id, key, value, identity, tag_list)
     return {"status": "ok"}
 
 @app.put("/memory/{thread_id}")
-async def update_memory(thread_id: str, key: str, value: str, identity: str | None = None):
-    memory_handler.update_fact(thread_id, key, value, identity)
+async def update_memory(
+    thread_id: str,
+    key: str,
+    value: str,
+    identity: str | None = None,
+    tags: str | None = None,
+):
+    tag_list = [t for t in tags.split(',') if t] if tags else None
+    memory_handler.update_fact(thread_id, key, value, identity, tag_list)
     return {"status": "ok"}
 
 @app.delete("/memory/{thread_id}/{key}")
