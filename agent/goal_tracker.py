@@ -28,19 +28,46 @@ class GoalTracker:
                     thread_id VARCHAR(255),
                     identity VARCHAR(255),
                     text TEXT NOT NULL,
-                    completed BOOLEAN DEFAULT FALSE
+                    completed BOOLEAN DEFAULT FALSE,
+                    deferred BOOLEAN DEFAULT FALSE
                 );
+                """
+            )
+            # Ensure the deferred column exists when upgrading
+            cur.execute(
+                """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT FROM pg_attribute
+                        WHERE attrelid = 'goals'::regclass
+                          AND attname = 'deferred'
+                          AND NOT attisdropped
+                    ) THEN
+                        ALTER TABLE goals ADD COLUMN deferred BOOLEAN DEFAULT FALSE;
+                    END IF;
+                END
+                $$;
                 """
             )
             self.conn.commit()
 
+    def _is_deferred(self, text: str) -> bool:
+        """Return True if the text sounds like a vague or deferred idea."""
+        vague_patterns = [r"someday i might", r"maybe", r"one day", r"i might", r"perhaps", r"eventually"]
+        for pat in vague_patterns:
+            if re.search(pat, text, re.IGNORECASE):
+                return True
+        return False
+
     def add_goal(self, thread_id: str, text: str, identity: Optional[str] = None) -> None:
         if not self.conn:
             return
+        deferred = self._is_deferred(text)
         with self.conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO goals (thread_id, identity, text) VALUES (%s, %s, %s)",
-                (thread_id, identity, text),
+                "INSERT INTO goals (thread_id, identity, text, deferred) VALUES (%s, %s, %s, %s)",
+                (thread_id, identity, text, deferred),
             )
             self.conn.commit()
 
@@ -60,7 +87,17 @@ class GoalTracker:
             return []
         with self.conn.cursor() as cur:
             cur.execute(
-                "SELECT id, text, completed, identity FROM goals WHERE thread_id=%s",
+                "SELECT id, text, completed, identity, deferred FROM goals WHERE thread_id=%s",
+                (thread_id,),
+            )
+            return cur.fetchall()
+
+    def list_deferred_goals(self, thread_id: str):
+        if not self.conn:
+            return []
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, text, completed, identity, deferred FROM goals WHERE thread_id=%s AND deferred=TRUE",
                 (thread_id,),
             )
             return cur.fetchall()

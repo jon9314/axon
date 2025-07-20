@@ -22,6 +22,8 @@ plugin provides metadata such as name, description, and usage via the
 `@plugin` decorator.
 
 Goals can be stored via the `/goals/{thread_id}` API for simple task tracking.
+Ideas that sound vague ("someday I might...") are marked as **deferred** and
+can be listed via `/goals/{thread_id}/deferred`.
 
 ## Docker Compose
 
