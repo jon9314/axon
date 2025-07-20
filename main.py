@@ -6,6 +6,7 @@ import asyncio
 from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from memory.user_profile import UserProfileManager
 from agent.reminder import ReminderManager
+from agent.context_manager import ContextManager
 
 # Global managers used across commands
 profile_manager = UserProfileManager()
@@ -97,6 +98,14 @@ def remind(message: str, delay: int = 60) -> None:
     """Schedule a reminder in seconds."""
     reminder_manager.schedule(message, delay)
     print(f"Reminder set in {delay} seconds: {message}")
+
+
+@app.command()
+def remember(topic: str, fact: str, thread_id: str = "cli_thread", identity: str = "cli_user") -> None:
+    """Store a fact directly into Axon's memory."""
+    cm = ContextManager(thread_id=thread_id, identity=identity)
+    cm.add_fact(topic, fact)
+    print(f"Remembered '{topic}' = '{fact}'.")
 
 
 if __name__ == "__main__":

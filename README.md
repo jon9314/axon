@@ -21,6 +21,13 @@ Run `python main.py cli` to load plugins (hot reloaded each launch). Each
 plugin provides metadata such as name, description, and usage via the
 `@plugin` decorator.
 
+To store a fact without using the UI, you can run:
+
+```bash
+python main.py remember "topic" "fact"
+```
+This writes the key/value pair directly to Axon's memory.
+
 Goals can be stored via the `/goals/{thread_id}` API for simple task tracking.
 Ideas that sound vague ("someday I might...") are marked as **deferred** and
 can be listed via `/goals/{thread_id}/deferred`.
