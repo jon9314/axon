@@ -122,6 +122,11 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             logging.info(f"Received message: '{data}'")
 
+            # Automatically log goal-related messages
+            goal_tracker.detect_and_add_goal(
+                thread_id, data, identity="default_user"
+            )
+
             response_message = ""
             remember_match = re.match(r"remember (.*) is (.*)", data, re.IGNORECASE)
 
