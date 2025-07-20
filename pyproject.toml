@@ -20,6 +20,7 @@ requests = "^2.31.0"
 httpx = "^0.27.0"
 pyperclip = "^1.8.2"
 keyboard = "^0.13.5"
+plyer = "^2.1.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.2"

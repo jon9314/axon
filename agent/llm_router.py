@@ -25,7 +25,7 @@ class LLMRouter:
 
         return len(prompt) > 400
 
-    def get_response(self, prompt: str, model: str) -> str:
+    def get_response(self, prompt: str, model: str, persona: str | None = None, tone: str | None = None) -> str:
         """
         Sends a prompt to the Ollama server and returns the response.
 
@@ -36,6 +36,14 @@ class LLMRouter:
         if self._needs_cloud(prompt):
             fallback = generate_prompt(prompt)
             return to_json(fallback)
+
+        if persona or tone:
+            style_parts = []
+            if persona:
+                style_parts.append(f"persona:{persona}")
+            if tone:
+                style_parts.append(f"tone:{tone}")
+            prompt = f"[{','.join(style_parts)}] {prompt}"
 
         headers = {"Content-Type": "application/json"}
         data = {"model": model, "prompt": prompt, "stream": False}
