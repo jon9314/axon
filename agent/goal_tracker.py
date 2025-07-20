@@ -4,6 +4,7 @@
 
 import psycopg2
 from typing import Optional
+import re
 from config.settings import settings
 
 
@@ -42,6 +43,17 @@ class GoalTracker:
                 (thread_id, identity, text),
             )
             self.conn.commit()
+
+    def detect_and_add_goal(
+        self, thread_id: str, message: str, identity: Optional[str] = None
+    ) -> bool:
+        """Detect goal-related phrases in a message and log them."""
+        patterns = [r"i want to .+", r"remind me .+"]
+        for pat in patterns:
+            if re.search(pat, message, re.IGNORECASE):
+                self.add_goal(thread_id, message, identity)
+                return True
+        return False
 
     def list_goals(self, thread_id: str):
         if not self.conn:
