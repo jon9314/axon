@@ -36,7 +36,7 @@ memory:
 - Save/retrieve memory by user and thread
 - Ensure irrelevant facts aren’t retrieved between contexts
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 
@@ -60,7 +60,7 @@ memory:
 - Edit content in UI or via CLI
 - Delete by ID
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 
@@ -88,7 +88,7 @@ memory:
 - Load sample plugin with console output
 - List loaded plugins from CLI
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 
@@ -116,7 +116,7 @@ plugins:
 
 - Sample plugin retrieves a memory item and sends a mocked API request
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 
@@ -141,7 +141,7 @@ plugins:
 
 - Submit test utterance and verify it's logged
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 
@@ -166,7 +166,7 @@ plugins:
 
 - Capture and retrieve deferred ideas in UI/API
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 
@@ -193,7 +193,7 @@ identity_tracking: true
 - Track who said what in multi-person sessions
 - Ensure memory entries reflect correct `identity`
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 
@@ -213,7 +213,7 @@ identity_tracking: true
 
 - Load MCP-wrapped memory payload and tag source properly
 
-**Status:** TODO
+**Status:** Done
 
 **Optional:**
 

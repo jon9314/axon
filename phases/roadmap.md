@@ -33,12 +33,12 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 ## 🧠 Phase 2: Memory & Plugin Enrichment
 **Goal:** Scoped memory, plugin loader, goal tracking
 
-- [ ] Memory scoping (per thread, per identity)
-- [ ] Edit/delete/lock memory entries
-- [ ] Plugin system with hot-reload + metadata config
-- [ ] Structured long-term goal tracking
-- [ ] Manual note tagging + identity recognition
-- [ ] Add support for CLI input memory injection
+- [x] Memory scoping (per thread, per identity)
+- [x] Edit/delete/lock memory entries
+- [x] Plugin system with hot-reload + metadata config
+- [x] Structured long-term goal tracking
+- [x] Manual note tagging + identity recognition
+- [x] Add support for CLI input memory injection
 
 ---
 
