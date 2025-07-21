@@ -43,3 +43,27 @@ llm:
 
 `LLMRouter` automatically forwards this dictionary to `qwen_agent.agents.Assistant`.
 
+## Switching between Qwen-Agent and plain Ollama
+
+The Qwen3 release ships with a built‑in set of tools such as `retrieval`,
+`web_search` and a `code_interpreter`. `LLMRouter` registers these so the
+assistant can call them when appropriate. If you prefer a bare model without any
+tool calls you can instead point the assistant at Ollama's OpenAI compatible
+endpoint.
+
+Update the `llm` dictionary when creating `LLMRouter`:
+
+```python
+assistant = Assistant(
+    function_list=[],  # disable tools
+    llm={
+        "model": "qwen3:8b",
+        "model_type": "oai",
+        "model_server": "http://localhost:11434/v1",
+    },
+)
+```
+
+Revert `function_list` to `list(TOOL_REGISTRY.keys())` and set `model_type` to
+`"transformers"` to restore Qwen-Agent's tool-aware interface.
+
