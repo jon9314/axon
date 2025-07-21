@@ -22,6 +22,7 @@ pyperclip = "^1.8.2"
 keyboard = "^0.13.5"
 plyer = "^2.1.0"
 qwen-agent = "0.0.27"
+python-dateutil = "^2.9.0.post0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.2"
