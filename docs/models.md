@@ -19,3 +19,27 @@ llm:
 
 Restart the backend after changing settings so the new model is loaded.
 
+## Launching Qwen3 with reasoning
+
+When running Qwen3 locally (via Ollama or any OpenAI‑compatible API) the
+Qwen-Agent README recommends enabling reasoning mode and selecting the "nous"
+tool-call prompt template. Start the model with `--enable-reasoning` and choose
+the DeepSeek parser:
+
+```bash
+ollama serve
+ollama run qwen3:8b --enable-reasoning --reasoning-parser deepseek_r1
+```
+
+Pass the prompt template through `generate_cfg` when creating the assistant.
+`config/settings.yaml` includes an example:
+
+```yaml
+llm:
+  default_local_model: "qwen3:8b"
+  qwen_agent_generate_cfg:
+    fncall_prompt_type: "nous"
+```
+
+`LLMRouter` automatically forwards this dictionary to `qwen_agent.agents.Assistant`.
+

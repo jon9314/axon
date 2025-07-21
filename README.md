@@ -71,6 +71,9 @@ tool-calling capabilities. The Qwen-Agent repository includes several usage
 examples such as the **Qwen3 Tool-call Demo** found in
 `examples/assistant_qwen3.py`.
 
+See [docs/models.md](docs/models.md) for instructions on running Qwen3 with
+reasoning enabled and how to pass the recommended `generate_cfg` settings.
+
 ## Roadmap progress
 
 Phase 0 has been completed and the Phase 1 MVP scaffold is implemented. See [phases/roadmap.md](phases/roadmap.md) for upcoming work.

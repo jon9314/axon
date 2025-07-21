@@ -6,6 +6,7 @@ from typing import Any, List, Dict, Iterable
 
 from qwen_agent.agents import Assistant
 from qwen_agent.tools import TOOL_REGISTRY
+from config.settings import settings
 
 from .fallback_prompt import generate_prompt, to_json
 
@@ -26,6 +27,7 @@ class LLMRouter:
             self.assistant = Assistant(
                 function_list=tool_names,
                 llm={"model": self.model, "model_type": "transformers"},
+                generate_cfg=settings.llm.qwen_agent_generate_cfg,
             )
         return self.assistant
 
