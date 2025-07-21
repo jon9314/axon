@@ -11,6 +11,7 @@ class DatabaseSettings(BaseModel):
 
 class LlmSettings(BaseModel):
     default_local_model: str
+    qwen_agent_generate_cfg: dict | None = None
 
 class AppSettings(BaseModel):
     database: DatabaseSettings
