@@ -1,12 +1,12 @@
 from fastapi import FastAPI
-from datetime import datetime
+from datetime import datetime, UTC
 import time
 
 app = FastAPI()
 
 @app.get("/now")
 def get_now():
-    return {"timestamp": datetime.utcnow().isoformat()}
+    return {"timestamp": datetime.now(UTC).isoformat()}
 
 @app.get("/timezone")
 def get_timezone():
