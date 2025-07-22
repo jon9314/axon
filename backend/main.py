@@ -208,9 +208,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     memory_handler.add_fact(
                         thread_id,
                         f"{result['source']}_{ts}",
-                        json.dumps(result["output"]),
+                        result["summary"],
                         identity=result["source"],
-                        tags=[f"source:{result['source']}"]
+                        tags=[
+                            f"source:{result['source']}",
+                            f"confidence:{result['confidence']:.2f}",
+                        ],
                     )
                 except Exception as e:
                     response_message = f"MCP error: {e}"

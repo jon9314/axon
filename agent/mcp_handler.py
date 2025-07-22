@@ -1,10 +1,10 @@
 # axon/agent/mcp_handler.py
 
+from typing import Tuple
+
+
 class MCPHandler:
-    """
-    Handles the Master Control Program (MCP) protocol for structured
-    communication between the agent and its tools.
-    """
+    """Handle Model Context Protocol messages and normalize results."""
     def parse_message(self, message: dict) -> bool:
         """
         Checks if a message conforms to the basic MCP protocol by looking for
@@ -43,6 +43,62 @@ class MCPHandler:
         return mcp_message
 
 
+    def _normalize(self, source: str, args: dict, output: dict) -> Tuple[str, float]:
+        """Convert a tool response into a human readable summary.
+
+        Parameters
+        ----------
+        source: str
+            Name of the MCP tool producing the output.
+        args: dict
+            Original arguments passed to the tool.
+        output: dict
+            Raw JSON output returned by the tool.
+
+        Returns
+        -------
+        Tuple[str, float]
+            A summary string and confidence score.
+        """
+
+        summary = ""
+        confidence = 0.9
+
+        if source == "calculator" and "result" in output:
+            summary = f"Calculator result: {output['result']}"
+        elif source == "time":
+            if "timestamp" in output:
+                summary = f"Current time is {output['timestamp']}"
+            elif "timezone" in output:
+                summary = f"System timezone is {output['timezone']}"
+            elif "seconds" in output:
+                summary = f"Duration is {output['seconds']} seconds"
+        elif source == "filesystem":
+            path = args.get("path", "")
+            if "files" in output:
+                files = ", ".join(output["files"])
+                summary = f"Files in {path or '.'}: {files}"
+            elif "content" in output:
+                content = output["content"]
+                snippet = content[:40] + ("..." if len(content) > 40 else "")
+                summary = f"Read {path}: {snippet}"
+            elif "status" in output:
+                summary = f"Write {path}: {output['status']}"
+            elif "exists" in output:
+                summary = f"File {path} exists" if output["exists"] else f"File {path} missing"
+        elif source == "markdown_backup":
+            note = args.get("name", "")
+            if "status" in output:
+                summary = f"Saved markdown note {note}"
+            elif "content" in output:
+                summary = f"Fetched markdown note {note}"
+            elif "matches" in output:
+                summary = f"Found {len(output['matches'])} notes for '{args.get('query','')}'"
+        if not summary:
+            confidence = 0.5
+            summary = str(output)
+        return summary, confidence
+
     def handle_message(self, message: dict):
         """Route MCP message to matching plugin and return its result."""
         if not self.parse_message(message):
@@ -56,4 +112,10 @@ class MCPHandler:
             raise ValueError(f"Unknown tool: {tool_name}")
         plugin_info = AVAILABLE_PLUGINS[tool_name]
         output = plugin_info.func(**args)
-        return {"source": tool_name, "output": output}
+        summary, confidence = self._normalize(tool_name, args, output)
+        return {
+            "source": tool_name,
+            "output": output,
+            "summary": summary,
+            "confidence": confidence,
+        }

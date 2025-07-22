@@ -16,3 +16,5 @@ def test_handle_message(mock_get):
     result = handler.handle_message(msg)
     assert result['source'] == 'calculator'
     assert result['output']['result'] == 2
+    assert 'summary' in result
+    assert result['confidence'] >= 0.5
