@@ -8,6 +8,7 @@ from agent.llm_router import LLMRouter
 from agent.goal_tracker import GoalTracker
 from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from agent.mcp_handler import MCPHandler
+from agent.mcp_router import mcp_router
 from agent.pasteback_handler import PastebackHandler
 from memory.user_profile import UserProfileManager
 import re
@@ -50,6 +51,16 @@ def shutdown_event():
 @app.get("/")
 async def read_root():
     return {"message": "Axon backend is running and connected to memory."}
+
+
+@app.get("/mcp/tools")
+async def list_mcp_tools():
+    tools = {}
+    for name in mcp_router.list_tools():
+        tools[name] = {
+            "available": mcp_router.check_tool(name)
+        }
+    return {"tools": tools}
 
 
 @app.get("/memory/{thread_id}")

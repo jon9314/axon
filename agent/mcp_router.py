@@ -3,6 +3,7 @@ import json
 import yaml
 import subprocess
 import requests
+import shutil
 from typing import Any, Dict, List, Optional
 
 
@@ -32,6 +33,23 @@ class MCPRouter:
 
     def get_tool(self, name: str) -> Optional[Dict[str, Any]]:
         return self.tools.get(name)
+
+    def check_tool(self, name: str) -> bool:
+        """Return True if the tool appears reachable."""
+        info = self.get_tool(name)
+        if not info:
+            return False
+        transport = info.get("transport")
+        try:
+            if transport == "http":
+                resp = requests.get(info["url"], timeout=2)
+                return resp.status_code < 500
+            if transport == "stdio":
+                cmd = info.get("command", "").split()[0]
+                return bool(shutil.which(cmd))
+        except Exception:
+            return False
+        return False
 
     def call(self, name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Send a payload to the given tool using its configured transport."""

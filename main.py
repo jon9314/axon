@@ -6,6 +6,7 @@ import typer
 import uvicorn
 import asyncio
 from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
+from agent.mcp_router import MCPRouter
 from memory.user_profile import UserProfileManager
 from agent.reminder import ReminderManager
 from agent.context_manager import ContextManager
@@ -108,6 +109,15 @@ def remember(topic: str, fact: str, thread_id: str = "cli_thread", identity: str
     cm = ContextManager(thread_id=thread_id, identity=identity)
     cm.add_fact(topic, fact)
     print(f"Remembered '{topic}' = '{fact}'.")
+
+
+@app.command("mcp-tools")
+def list_mcp_tools(config: str = "config/mcp_servers.yaml") -> None:
+    """List registered MCP tools and check connectivity."""
+    router = MCPRouter(config)
+    for name in router.list_tools():
+        status = "ok" if router.check_tool(name) else "unreachable"
+        print(f"{name}: {status}")
 
 
 if __name__ == "__main__":
