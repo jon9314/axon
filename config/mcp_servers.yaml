@@ -1,0 +1,9 @@
+- name: filesystem
+  transport: http
+  url: http://localhost:9001
+- name: time
+  transport: http
+  url: http://localhost:9002
+- name: calculator
+  transport: http
+  url: http://localhost:9003

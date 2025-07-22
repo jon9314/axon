@@ -55,4 +55,5 @@ class MCPHandler:
         if tool_name not in AVAILABLE_PLUGINS:
             raise ValueError(f"Unknown tool: {tool_name}")
         plugin_info = AVAILABLE_PLUGINS[tool_name]
-        return plugin_info.func(**args)
+        output = plugin_info.func(**args)
+        return {"source": tool_name, "output": output}
