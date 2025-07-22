@@ -12,6 +12,7 @@ from agent.pasteback_handler import PastebackHandler
 from memory.user_profile import UserProfileManager
 import re
 import logging
+import time
 
 # --- NEW: Configure Logging ---
 logging.basicConfig(
@@ -191,7 +192,15 @@ async def websocket_endpoint(websocket: WebSocket):
             elif isinstance(mcp_data, dict) and mcp_handler.parse_message(mcp_data):
                 try:
                     result = mcp_handler.handle_message(mcp_data)
-                    response_message = json.dumps(result)
+                    response_message = json.dumps(result["output"])
+                    ts = int(time.time())
+                    memory_handler.add_fact(
+                        thread_id,
+                        f"{result['source']}_{ts}",
+                        json.dumps(result["output"]),
+                        identity=result["source"],
+                        tags=[f"source:{result['source']}"]
+                    )
                 except Exception as e:
                     response_message = f"MCP error: {e}"
             elif remember_match:

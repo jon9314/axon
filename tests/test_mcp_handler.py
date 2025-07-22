@@ -14,4 +14,5 @@ def test_handle_message(mock_get):
     handler = MCPHandler()
     msg = handler.generate_message('calculator', {'command': 'evaluate', 'expr': '1+1'})
     result = handler.handle_message(msg)
-    assert result['result'] == 2
+    assert result['source'] == 'calculator'
+    assert result['output']['result'] == 2
