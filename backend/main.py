@@ -10,7 +10,9 @@ from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from agent.mcp_handler import MCPHandler
 from agent.mcp_router import mcp_router
 from agent.pasteback_handler import PastebackHandler
-from agent.reminder import ReminderManager
+from typing import cast
+
+from agent.reminder import MemoryLike, ReminderManager
 from agent.notifier import Notifier
 from memory.user_profile import UserProfileManager
 import re
@@ -20,7 +22,7 @@ import time
 # --- NEW: Configure Logging ---
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
 # Create a FastAPI application instance
@@ -37,7 +39,7 @@ llm_router = LLMRouter()
 mcp_handler = MCPHandler()
 pasteback_handler = PastebackHandler(memory_handler)
 profile_manager = UserProfileManager(db_uri=settings.database.postgres_uri)
-reminder_manager = ReminderManager(Notifier(), memory_handler)
+reminder_manager = ReminderManager(Notifier(), cast(MemoryLike, memory_handler))
 
 
 @app.on_event("startup")
@@ -46,10 +48,12 @@ def startup_event() -> None:
     load_plugins()
     logging.info(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
 
+
 @app.on_event("shutdown")
 def shutdown_event():
     memory_handler.close_connection()
     logging.info("Application shutdown: Database connection closed.")
+
 
 @app.get("/")
 async def read_root():
@@ -60,9 +64,7 @@ async def read_root():
 async def list_mcp_tools():
     tools = {}
     for name in mcp_router.list_tools():
-        tools[name] = {
-            "available": mcp_router.check_tool(name)
-        }
+        tools[name] = {"available": mcp_router.check_tool(name)}
     return {"tools": tools}
 
 
@@ -91,9 +93,10 @@ async def add_memory(
     identity: str | None = None,
     tags: str | None = None,
 ):
-    tag_list = [t for t in tags.split(',') if t] if tags else None
-    memory_handler.add_fact(thread_id, key, value, identity, tag_list)
+    tag_list = [t for t in tags.split(",") if t] if tags else None
+    memory_handler.add_fact(thread_id, key, value, identity, tags=tag_list)
     return {"status": "ok"}
+
 
 @app.put("/memory/{thread_id}")
 async def update_memory(
@@ -103,14 +106,16 @@ async def update_memory(
     identity: str | None = None,
     tags: str | None = None,
 ):
-    tag_list = [t for t in tags.split(',') if t] if tags else None
-    memory_handler.update_fact(thread_id, key, value, identity, tag_list)
+    tag_list = [t for t in tags.split(",") if t] if tags else None
+    memory_handler.update_fact(thread_id, key, value, identity, tags=tag_list)
     return {"status": "ok"}
+
 
 @app.delete("/memory/{thread_id}/{key}")
 async def delete_memory(thread_id: str, key: str):
     deleted = memory_handler.delete_fact(thread_id, key)
     return {"deleted": deleted}
+
 
 @app.post("/memory/{thread_id}/{key}/lock")
 async def lock_memory(thread_id: str, key: str, locked: bool = True):
@@ -183,9 +188,15 @@ async def get_profile(identity: str):
 
 
 @app.post("/profiles/{identity}")
-async def set_profile(identity: str, persona: str = "assistant", tone: str = "neutral", email: str | None = None):
+async def set_profile(
+    identity: str,
+    persona: str = "assistant",
+    tone: str = "neutral",
+    email: str | None = None,
+):
     profile_manager.set_profile(identity, persona=persona, tone=tone, email=email)
     return {"status": "ok"}
+
 
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
@@ -199,9 +210,7 @@ async def websocket_endpoint(websocket: WebSocket):
             logging.info(f"Received message: '{data}'")
 
             # Automatically log goal-related messages
-            goal_tracker.detect_and_add_goal(
-                thread_id, data, identity="default_user"
-            )
+            goal_tracker.detect_and_add_goal(thread_id, data, identity="default_user")
 
             response_message = ""
             remember_match = re.match(r"remember (.*) is (.*)", data, re.IGNORECASE)
@@ -209,6 +218,7 @@ async def websocket_endpoint(websocket: WebSocket):
             mcp_data = None
             try:
                 import json
+
                 mcp_data = json.loads(data)
             except Exception:
                 pass
@@ -246,7 +256,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
             elif "what is" in data.lower():
                 key_match = re.search(r"what is (.*)\?", data, re.IGNORECASE)
-                key = key_match.group(1).strip() if key_match else data.lower().replace("what is", "").strip()
+                key = (
+                    key_match.group(1).strip()
+                    if key_match
+                    else data.lower().replace("what is", "").strip()
+                )
                 fact = memory_handler.get_fact(thread_id, key)
                 if fact:
                     response_message = f"You told me that {key} is {fact}."
@@ -277,4 +291,3 @@ async def websocket_endpoint(websocket: WebSocket):
     finally:
         await websocket.close()
         logging.info("WebSocket connection closed.")
-
