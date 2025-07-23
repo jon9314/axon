@@ -55,7 +55,7 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] **GitHub MCP**: repo access and edits
 - [x] **Context7 / DeepWiki / Docs**: documentation fetchers
 - [x] **Text2SQL + Antvis**: structured querying and visualization *(basic CSV query server implemented)*
-- [ ] **WolframAlpha / Prolog / Logic MCPs** (optional advanced logic)
+- [x] **WolframAlpha / Prolog / Logic MCPs** (optional advanced logic)
 
 ---
 
