@@ -9,6 +9,7 @@ from qwen_agent.tools import TOOL_REGISTRY
 from config.settings import settings
 
 from .fallback_prompt import generate_prompt, to_json
+from .response_shaper import ResponseShaper
 
 
 class LLMRouter:
@@ -76,7 +77,8 @@ class LLMRouter:
             output = assistant.run_nonstream(messages)
             text = self._extract_text(output)
             if text:
-                return text
+                shaper = ResponseShaper()
+                return shaper.shape(text, persona=persona, tone=tone)
             return "Sorry, I received an empty response from Qwen3.".strip()
         except Exception:
             fallback = generate_prompt(
