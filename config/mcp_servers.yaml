@@ -19,3 +19,6 @@
 - name: query
   transport: http
   url: http://localhost:9007
+- name: wolframalpha
+  transport: http
+  url: http://localhost:9008

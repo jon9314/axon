@@ -7,6 +7,7 @@ from .markdown_backup_server import app as md_app
 from .github_server import app as gh_app
 from .docs_server import app as docs_app
 from .query_server import app as query_app
+from .wolframalpha_server import app as wolfram_app
 
 SERVERS = [
     (fs_app, 9001),
@@ -16,6 +17,7 @@ SERVERS = [
     (gh_app, 9005),
     (docs_app, 9006),
     (query_app, 9007),
+    (wolfram_app, 9008),
 ]
 
 def run(app, port):

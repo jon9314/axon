@@ -16,6 +16,8 @@ This launches the following services on localhost:
 - **Markdown Backup** – `http://localhost:9004`
 - **GitHub** – `http://localhost:9005` (basic repo access)
 - **Docs** – `http://localhost:9006` (Python documentation)
+- **Query** – `http://localhost:9007` (CSV SQL queries)
+- **WolframAlpha** – `http://localhost:9008` (advanced computation)
 
 The backend expects these URLs via environment variables when running in containers. They can be customised in `docker-compose.yml` or your shell environment.
 
