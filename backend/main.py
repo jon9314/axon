@@ -1,6 +1,8 @@
 # axon/backend/main.py
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+from typing import Dict, List
 from memory.memory_handler import MemoryHandler
 from memory.preload import preload
 from config.settings import settings
@@ -15,6 +17,7 @@ from typing import cast
 from agent.reminder import MemoryLike, ReminderManager
 from agent.notifier import Notifier
 from memory.user_profile import UserProfileManager
+import json
 import re
 import logging
 import time
@@ -25,11 +28,52 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
+
+class RateLimiterMiddleware(BaseHTTPMiddleware):
+    """Simple in-memory rate limiter and optional token auth."""
+
+    def __init__(self, app: FastAPI, limit: int, token: str | None) -> None:
+        super().__init__(app)
+        self.limit = limit
+        self.token = token
+        self.calls: Dict[str, List[float]] = {}
+
+    async def dispatch(self, request: Request, call_next):
+        if self.token and request.headers.get("X-API-Token") != self.token:
+            return Response(status_code=401)
+
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.time()
+        history = self.calls.setdefault(client_ip, [])
+        history = [t for t in history if now - t < 60]
+        if len(history) >= self.limit:
+            return Response(status_code=429)
+        history.append(now)
+        self.calls[client_ip] = history
+        return await call_next(request)
+
+
+def log_traffic(entry: dict) -> None:
+    """Append traffic data to the MCP log if enabled."""
+    if not settings.app.mcp_mode:
+        return
+    try:
+        with open(settings.app.mcp_log_path, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except Exception as exc:  # pragma: no cover - best effort logging
+        logging.error("Failed to log MCP traffic: %s", exc)
+
+
 # Create a FastAPI application instance
 app = FastAPI(
     title="Axon Backend",
     description="The backend service for the Axon project, handling API requests and WebSocket connections.",
     version="0.1.0",
+)
+app.add_middleware(
+    RateLimiterMiddleware,
+    limit=settings.app.rate_limit_per_minute,
+    token=settings.app.api_token,
 )
 
 # Instantiate the handlers
@@ -66,6 +110,12 @@ async def list_mcp_tools():
     for name in mcp_router.list_tools():
         tools[name] = {"available": mcp_router.check_tool(name)}
     return {"tools": tools}
+
+
+@app.get("/models")
+async def list_models():
+    """Return available local models."""
+    return {"models": [settings.llm.default_local_model, "mock-model"]}
 
 
 @app.get("/memory/{thread_id}")
@@ -206,8 +256,19 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            data = await websocket.receive_text()
-            logging.info(f"Received message: '{data}'")
+            raw = await websocket.receive_text()
+            logging.info(f"Received message: '{raw}'")
+            log_traffic({"direction": "in", "timestamp": time.time(), "data": raw})
+
+            selected_model = settings.llm.default_local_model
+            data = raw
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict) and "text" in parsed:
+                    data = parsed["text"]
+                    selected_model = parsed.get("model", selected_model)
+            except json.JSONDecodeError:
+                pass
 
             # Automatically log goal-related messages
             goal_tracker.detect_and_add_goal(thread_id, data, identity="default_user")
@@ -217,8 +278,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
             mcp_data = None
             try:
-                import json
-
                 mcp_data = json.loads(data)
             except Exception:
                 pass
@@ -274,12 +333,15 @@ async def websocket_endpoint(websocket: WebSocket):
                 tone = profile.get("tone") if profile else None
                 response_message = llm_router.get_response(
                     data,
-                    model=settings.llm.default_local_model,
+                    model=selected_model,
                     persona=persona,
                     tone=tone,
                 )
 
             logging.info(f"Sending response: '{response_message}'")
+            log_traffic(
+                {"direction": "out", "timestamp": time.time(), "data": response_message}
+            )
             await websocket.send_text(response_message)
 
     except WebSocketDisconnect:

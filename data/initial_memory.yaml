@@ -3,10 +3,12 @@ facts:
     key: user_name
     value: Alex
     identity: default_user
+    domain: personal
   - thread_id: default_thread
     key: project_codename
     value: Frankie
     identity: default_user
+    domain: project
 mcp_messages:
   - mcp_protocol_version: "1.0"
     tool_name: note

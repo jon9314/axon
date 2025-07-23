@@ -10,6 +10,8 @@ from agent.mcp_router import MCPRouter
 from memory.user_profile import UserProfileManager
 from agent.reminder import ReminderManager
 from agent.context_manager import ContextManager
+from rich.console import Console
+from rich.prompt import Prompt
 
 # Global managers used across commands
 profile_manager = UserProfileManager()
@@ -17,8 +19,9 @@ reminder_manager = ReminderManager()
 
 app = typer.Typer(
     name="axon",
-    help="The main entry point for the Axon project, supporting different operational modes."
+    help="The main entry point for the Axon project, supporting different operational modes.",
 )
+
 
 @app.command()
 def web():
@@ -26,12 +29,8 @@ def web():
     Starts the FastAPI web server for the backend API and WebSocket.
     """
     print("Starting web server...")
-    uvicorn.run(
-        "axon.backend.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True
-    )
+    uvicorn.run("axon.backend.main:app", host="0.0.0.0", port=8000, reload=True)
+
 
 @app.command()
 def cli():
@@ -43,7 +42,7 @@ def cli():
     load_plugins(hot_reload=True)
     print(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
     # --- END NEW ---
-    
+
     print("\nStarting CLI mode...")
     print("Type 'exit' or 'quit' to stop.")
     try:
@@ -68,6 +67,29 @@ def cli():
 
 
 @app.command()
+def tui() -> None:
+    """Simple text-based UI using Rich."""
+    console = Console()
+    console.print("[bold magenta]Axon TUI mode. Type 'quit' to exit.[/bold magenta]")
+    load_plugins(hot_reload=True)
+    while True:
+        try:
+            user_input = Prompt.ask("[cyan]You[/cyan]")
+        except (EOFError, KeyboardInterrupt):
+            break
+        if user_input.lower() in {"quit", "exit"}:
+            break
+        if user_input in AVAILABLE_PLUGINS:
+            plugin_info = AVAILABLE_PLUGINS[user_input]
+            result = plugin_info.func()
+            console.print(f"[green]Plugin {user_input}:[/green] {result}")
+        else:
+            console.print(
+                f"[yellow]Agent[/yellow]: I would process '{user_input}' now."
+            )
+
+
+@app.command()
 def headless():
     """
     Runs the Axon agent in headless mode, performing a background task.
@@ -78,7 +100,7 @@ def headless():
         count = 0
         while count < 5:
             print(f"Headless agent is running... (Cycle {count + 1})")
-            await asyncio.sleep(2) # Simulate doing work
+            await asyncio.sleep(2)  # Simulate doing work
             count += 1
 
     try:
@@ -90,7 +112,12 @@ def headless():
 
 
 @app.command()
-def set_profile(identity: str, persona: str = "assistant", tone: str = "neutral", email: Optional[str] = None) -> None:
+def set_profile(
+    identity: str,
+    persona: str = "assistant",
+    tone: str = "neutral",
+    email: Optional[str] = None,
+) -> None:
     """Create or update a user profile."""
     profile_manager.set_profile(identity, persona=persona, tone=tone, email=email)
     print(f"Profile saved for {identity}.")
@@ -113,7 +140,9 @@ def clipboard_monitor_cmd(seconds: int = 15) -> None:
 
 
 @app.command()
-def remember(topic: str, fact: str, thread_id: str = "cli_thread", identity: str = "cli_user") -> None:
+def remember(
+    topic: str, fact: str, thread_id: str = "cli_thread", identity: str = "cli_user"
+) -> None:
     """Store a fact directly into Axon's memory."""
     cm = ContextManager(thread_id=thread_id, identity=identity)
     cm.add_fact(topic, fact)
@@ -131,4 +160,3 @@ def list_mcp_tools(config: str = "config/mcp_servers.yaml") -> None:
 
 if __name__ == "__main__":
     app()
-
