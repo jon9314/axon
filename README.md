@@ -81,5 +81,5 @@ reasoning enabled and how to pass the recommended `generate_cfg` settings.
 
 ## Roadmap progress
 
-Phases 0 through 3.9 are complete. Phase 4 is currently in progress with manual cloud prompting and calendar features. See [phases/roadmap.md](phases/roadmap.md) for the latest status of each phase.
+Phases 0 through 4 are complete, including manual cloud prompting and calendar export features. See [phases/roadmap.md](phases/roadmap.md) for the latest status of each phase.
 

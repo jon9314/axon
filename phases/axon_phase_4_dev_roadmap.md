@@ -157,7 +157,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 ---
 
-### 4.7 – External Calendar Export (Optional)
+### 4.7 – External Calendar Export
 
 **Description:** Implement `calendar_exporter.py` to generate `.ics` files or a CalDAV-compatible feed
 
@@ -169,7 +169,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 - Google Calendar via manual sync or `.ics`
 
-**Status:** OPTIONAL
+**Status:** DONE
 
 ---
 

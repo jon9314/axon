@@ -85,16 +85,16 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 ## ☁️ Phase 4: Remote Model & API Tooling (Optional)
 **Goal:** Controlled cloud integration without automatic LLM calls
 
-- [ ] Claude/GPT model suggestion + prompt generation
-- [ ] UI support for paste-back workflow
-- [ ] Tool/plugin to watch clipboard and auto-insert output
+- [x] Claude/GPT model suggestion + prompt generation
+- [x] UI support for paste-back workflow
+- [x] Tool/plugin to watch clipboard and auto-insert output
 - [ ] Optional fallback through hosted proxy (manual consent only)
 
 ### Phase 4 Extensions (Planned)
 - [ ] Tag pasted responses with source annotations
 - [ ] Natural-language date parsing for reminders
 - [ ] Text-to-speech or audio notifications
-- [ ] Calendar export utility with `.ics` generation
+- [x] Calendar export utility with `.ics` generation
 
 ---
 
