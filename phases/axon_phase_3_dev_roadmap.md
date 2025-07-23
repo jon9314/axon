@@ -148,7 +148,7 @@ Axon will:
 
 - Future plugin: auto-commit fixes
 
-**Status:** In Progress – basic list/read/write endpoints implemented
+**Status:** DONE
 
 ---
 
@@ -168,6 +168,8 @@ Axon will:
 
 - Attach source links to memory
 
+**Status:** DONE
+
 ---
 
 ### 3.7 – Text2SQL MCP + Antvis (Data Tools)
@@ -185,6 +187,8 @@ Axon will:
 **Optional:**
 
 - Generate charts inline in frontend
+
+**Status:** In Progress – CSV query server implemented
 
 ---
 
