@@ -9,6 +9,11 @@ def test_list_and_read(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "-C", str(repo), "init"], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "config", "user.email", "test@example.com"],
+        check=True,
+    )
+    subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], check=True)
     file = repo / "README.md"
     file.write_text("hello", encoding="utf-8")
     subprocess.run(["git", "-C", str(repo), "add", "README.md"], check=True)
