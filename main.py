@@ -133,6 +133,13 @@ def set_profile(
     print(f"Profile saved for {identity}.")
 
 
+@app.command("import-profiles")
+def import_profiles(path: str = "config/user_prefs.yaml") -> None:
+    """Load default profiles from a YAML file."""
+    profile_manager.load_from_yaml(path)
+    print(f"Profiles imported from {path}.")
+
+
 @app.command()
 def remind(message: str, delay: int = 60, thread_id: str = "cli_thread") -> None:
     """Schedule a reminder in seconds."""
