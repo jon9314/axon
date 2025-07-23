@@ -13,3 +13,4 @@ app:
   mcp_log_path: "mcp_traffic.json"
   api_token: "change-me"
   rate_limit_per_minute: 60
+  proactive_scan_minutes: 30

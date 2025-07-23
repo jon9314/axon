@@ -23,6 +23,7 @@ class AppConfig(BaseModel):
     mcp_log_path: str = "mcp_traffic.json"
     api_token: str | None = None
     rate_limit_per_minute: int = 60
+    proactive_scan_minutes: int = 30
 
 
 class AppSettings(BaseModel):
