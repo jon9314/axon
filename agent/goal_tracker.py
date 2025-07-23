@@ -54,13 +54,22 @@ class GoalTracker:
 
     def _is_deferred(self, text: str) -> bool:
         """Return True if the text sounds like a vague or deferred idea."""
-        vague_patterns = [r"someday i might", r"maybe", r"one day", r"i might", r"perhaps", r"eventually"]
+        vague_patterns = [
+            r"someday i might",
+            r"maybe",
+            r"one day",
+            r"i might",
+            r"perhaps",
+            r"eventually",
+        ]
         for pat in vague_patterns:
             if re.search(pat, text, re.IGNORECASE):
                 return True
         return False
 
-    def add_goal(self, thread_id: str, text: str, identity: Optional[str] = None) -> None:
+    def add_goal(
+        self, thread_id: str, text: str, identity: Optional[str] = None
+    ) -> None:
         if not self.conn:
             return
         deferred = self._is_deferred(text)
@@ -112,3 +121,12 @@ class GoalTracker:
             )
             self.conn.commit()
 
+    def delete_goals(self, thread_id: str) -> int:
+        """Delete all goals for a thread."""
+        if not self.conn:
+            return 0
+        with self.conn.cursor() as cur:
+            cur.execute("DELETE FROM goals WHERE thread_id=%s", (thread_id,))
+            deleted = cur.rowcount
+            self.conn.commit()
+            return deleted

@@ -22,6 +22,16 @@ app = typer.Typer(
     help="The main entry point for the Axon project, supporting different operational modes.",
 )
 
+plugins_app = typer.Typer(help="Plugin management commands")
+app.add_typer(plugins_app, name="plugins")
+
+
+@plugins_app.command("reload")
+def reload_plugins_cmd() -> None:
+    """Reload plugins from disk and display the available set."""
+    load_plugins(hot_reload=True)
+    print(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
+
 
 @app.command()
 def web():
