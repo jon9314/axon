@@ -74,6 +74,11 @@ def test_github_proxy(monkeypatch, tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "-C", str(repo), "init"], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "config", "user.email", "test@example.com"],
+        check=True,
+    )
+    subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], check=True)
     file = repo / "file.txt"
     file.write_text("data", encoding="utf-8")
     subprocess.run(["git", "-C", str(repo), "add", "file.txt"], check=True)
