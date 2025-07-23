@@ -17,6 +17,7 @@ services:
       TIME_MCP_URL: http://mcp_servers:9002
       CALC_MCP_URL: http://mcp_servers:9003
       MARKDOWN_MCP_URL: http://mcp_servers:9004
+      GITHUB_MCP_URL: http://mcp_servers:9005
     depends_on:
       - postgres
       - qdrant
@@ -38,6 +39,7 @@ services:
       - "9002:9002"
       - "9003:9003"
       - "9004:9004"
+      - "9005:9005"
 
   postgres:
     image: postgres:15

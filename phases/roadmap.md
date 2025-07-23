@@ -46,10 +46,10 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 **Goal:** Axon connects to local MCP ecosystem
 
 ### Priority MCP Servers
-- [ ] **Filesystem**: browse, read, edit files
-- [ ] **Time**: get current timestamp for reminders
-- [ ] **Calculator**: offload math operations
-- [ ] **Basic Memory**: backup or markdown-based memory overlay
+- [x] **Filesystem**: browse, read, edit files
+- [x] **Time**: get current timestamp for reminders
+- [x] **Calculator**: offload math operations
+- [x] **Basic Memory**: backup or markdown-based memory overlay
 
 ### Secondary MCP Targets
 - [ ] **GitHub MCP**: repo access and edits

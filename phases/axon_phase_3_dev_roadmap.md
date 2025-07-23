@@ -38,7 +38,7 @@ Axon will:
 - Read a `.txt` file and store its content as memory
 - List files in a test directory
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 
@@ -65,7 +65,7 @@ Axon will:
 - Insert current timestamp into memory
 - Compare time spans for reminders
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 
@@ -91,7 +91,7 @@ Axon will:
 
 - Ask “what’s 12.5% of 317.6?” and receive correct structured output
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 
@@ -117,7 +117,7 @@ Axon will:
 
 - Save and retrieve a note stored via markdown file
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 
