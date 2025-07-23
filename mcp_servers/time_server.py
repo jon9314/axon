@@ -1,16 +1,24 @@
 from fastapi import FastAPI
-from datetime import datetime, UTC
+from datetime import datetime, timezone
+
+try:  # Python 3.11+
+    from datetime import UTC  # type: ignore[attr-defined]
+except ImportError:  # pragma: no cover - for Python <3.11
+    UTC = timezone.utc
 import time
 
 app = FastAPI()
+
 
 @app.get("/now")
 def get_now():
     return {"timestamp": datetime.now(UTC).isoformat()}
 
+
 @app.get("/timezone")
 def get_timezone():
     return {"timezone": time.tzname[0]}
+
 
 @app.get("/duration")
 def duration_between(start: float, end: float):
