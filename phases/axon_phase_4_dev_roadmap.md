@@ -37,7 +37,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 - Simulate local model refusal → trigger fallback suggestion
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 
@@ -59,7 +59,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 - Copy > paste cycle tested in full
 - Memory stores both original prompt and pasted result
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 
@@ -80,7 +80,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 - “This might be better suited for Claude because it involves nuanced summarization.”
 - Include model links: Claude.ai, ChatGPT, Poe
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 
@@ -100,7 +100,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 - Prompt + paste within 15s triggers memory log
 
-**Status:** OPTIONAL
+**Status:** DONE
 
 ---
 
@@ -127,7 +127,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 - Schedule + retrieve reminder
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 
@@ -149,7 +149,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 - UI banner
 - Console log
 
-**Status:** TODO
+**Status:** DONE
 
 **Optional:**
 

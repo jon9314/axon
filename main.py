@@ -97,10 +97,19 @@ def set_profile(identity: str, persona: str = "assistant", tone: str = "neutral"
 
 
 @app.command()
-def remind(message: str, delay: int = 60) -> None:
+def remind(message: str, delay: int = 60, thread_id: str = "cli_thread") -> None:
     """Schedule a reminder in seconds."""
-    reminder_manager.schedule(message, delay)
+    reminder_manager.schedule(message, delay, thread_id)
     print(f"Reminder set in {delay} seconds: {message}")
+
+
+@app.command("clipboard-monitor")
+def clipboard_monitor_cmd(seconds: int = 15) -> None:
+    """Run the clipboard monitor plugin."""
+    from plugins.clipboard_monitor import clipboard_monitor
+
+    result = clipboard_monitor(seconds)
+    print(result)
 
 
 @app.command()

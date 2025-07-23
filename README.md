@@ -50,10 +50,15 @@ The frontend will be available on `http://localhost:3000` and the backend on
 ## Remote model fallback
 
 Axon can suggest prompts for hosted models like GPT-4o or Claude when the local
-LLM appears inadequate. The UI will display the generated prompt and provide a
-text area for pasting back the remote response. Press **Submit** after pasting
-to store the result in memory. For quick manual pasting you can run
-`python scripts/clipboard_watch.py` to monitor your clipboard.
+LLM appears inadequate. The UI displays the suggested model and a short reason
+explaining why the remote model fits the request. Copy the prompt shown in the
+UI, run it in your browser, then paste the response back and press **Submit** to
+store the result in memory. For quick manual pasting you can run
+`python scripts/clipboard_watch.py` to monitor your clipboard or invoke
+`python main.py clipboard-monitor`.
+
+The clipboard monitor relies on optional packages `pyperclip` and `keyboard`.
+Install them via `pip install pyperclip keyboard` if missing.
 
 
 ## Documentation

@@ -19,7 +19,17 @@ def suggest_model(user_message: str) -> Tuple[str, str]:
     if "summarize" in lowered or "summary" in lowered:
         return (
             "claude-3-sonnet",
-            "Claude is recommended for summarization tasks.",
+            "Claude's long context window excels at summarizing large texts.",
+        )
+    if "analyze" in lowered or "analysis" in lowered:
+        return (
+            "gpt-4o",
+            "GPT-4o provides strong analytical reasoning for complex tasks.",
+        )
+    if len(user_message) > 400:
+        return (
+            "gpt-4o",
+            "The request is lengthy; GPT-4o can handle larger context windows.",
         )
     return (
         "gpt-4o",

@@ -1,4 +1,6 @@
 from agent.pasteback_handler import PastebackHandler
+from agent.llm_router import LLMRouter
+import json
 
 class DummyMemory:
     def __init__(self):
@@ -21,3 +23,13 @@ def test_store_adds_two_facts():
     assert mem.calls[1][2] == 'reply text'
     assert mem.calls[0][3] == 'gpt-4o'
     assert mem.calls[1][3] == 'gpt-4o'
+
+
+def test_full_copy_paste_cycle():
+    mem = DummyMemory()
+    handler = PastebackHandler(mem)
+    router = LLMRouter()
+    prompt_json = json.loads(router.get_response('Please summarize these notes', model='local'))
+    handler.store('t2', prompt_json['prompt'], 'result text', model=prompt_json['model'])
+    assert len(mem.calls) == 2
+
