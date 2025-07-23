@@ -6,6 +6,7 @@ from .calculator_server import app as calc_app
 from .markdown_backup_server import app as md_app
 from .github_server import app as gh_app
 from .docs_server import app as docs_app
+from .query_server import app as query_app
 
 SERVERS = [
     (fs_app, 9001),
@@ -14,6 +15,7 @@ SERVERS = [
     (md_app, 9004),
     (gh_app, 9005),
     (docs_app, 9006),
+    (query_app, 9007),
 ]
 
 def run(app, port):
