@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Iterable
+from datetime import datetime
 
 from memory.memory_handler import MemoryHandler
 from agent.goal_tracker import GoalTracker
@@ -33,12 +34,21 @@ class PluginContext:
             tags=tags,
         )
 
-    def add_goal(self, text: str, identity: Optional[str] = None) -> None:
+    def add_goal(
+        self,
+        text: str,
+        identity: Optional[str] = None,
+        priority: int = 0,
+        deadline: str | None = None,
+    ) -> None:
         """Record a goal via the GoalTracker."""
+        dl = datetime.fromisoformat(deadline) if deadline else None
         self.goal_tracker.add_goal(
             thread_id=self.thread_id,
             text=text,
             identity=identity or self.identity,
+            priority=priority,
+            deadline=dl,
         )
 
 

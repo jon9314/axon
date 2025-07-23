@@ -78,7 +78,7 @@ app.add_middleware(
 
 # Instantiate the handlers
 memory_handler = MemoryHandler(db_uri=settings.database.postgres_uri)
-goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri)
+goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri, notifier=Notifier())
 llm_router = LLMRouter()
 mcp_handler = MCPHandler()
 pasteback_handler = PastebackHandler(memory_handler)
@@ -91,11 +91,13 @@ def startup_event() -> None:
     preload(memory_handler)
     load_plugins()
     logging.info(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
+    goal_tracker.start_deferred_prompting("default_thread", interval_seconds=3600)
 
 
 @app.on_event("shutdown")
 def shutdown_event():
     memory_handler.close_connection()
+    goal_tracker.stop_deferred_prompting()
     logging.info("Application shutdown: Database connection closed.")
 
 
@@ -225,8 +227,10 @@ async def list_goals(thread_id: str):
                 "completed": done,
                 "identity": ident,
                 "deferred": deferred,
+                "priority": priority,
+                "deadline": deadline,
             }
-            for g_id, text, done, ident, deferred in goals
+            for g_id, text, done, ident, deferred, priority, deadline in goals
         ]
     }
 
@@ -242,8 +246,10 @@ async def list_deferred(thread_id: str):
                 "completed": done,
                 "identity": ident,
                 "deferred": deferred,
+                "priority": priority,
+                "deadline": deadline,
             }
-            for g_id, text, done, ident, deferred in goals
+            for g_id, text, done, ident, deferred, priority, deadline in goals
         ]
     }
 

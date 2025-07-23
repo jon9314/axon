@@ -145,7 +145,7 @@ plugins:
 
 **Optional:**
 
-- Add priority and deadline fields to goals
+- Add priority and deadline fields to goals **(Done)**
 
 ---
 
@@ -170,7 +170,7 @@ plugins:
 
 **Optional:**
 
-- Periodic prompts for deferred goals
+- Periodic prompts for deferred goals **(Done)**
 
 ---
 
