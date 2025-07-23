@@ -4,11 +4,13 @@ import psycopg2
 from psycopg2 import sql
 from typing import Optional, Iterable
 
+
 class MemoryHandler:
     """
     Handles interactions with the PostgreSQL database for storing and
     retrieving factual memories (key-value pairs).
     """
+
     def __init__(self, db_uri: str):
         """
         Initializes the MemoryHandler and connects to the PostgreSQL database.
@@ -17,7 +19,9 @@ class MemoryHandler:
         try:
             self.conn = psycopg2.connect(db_uri)
             self._ensure_table_and_columns_exist()
-            print("Successfully connected to PostgreSQL and ensured 'facts' table is correctly structured.")
+            print(
+                "Successfully connected to PostgreSQL and ensured 'facts' table is correctly structured."
+            )
         except psycopg2.OperationalError as e:
             print(f"Error connecting to PostgreSQL: {e}")
             self.conn = None
@@ -40,6 +44,7 @@ class MemoryHandler:
                     identity VARCHAR(255),
                     locked BOOLEAN DEFAULT FALSE,
                     tags TEXT,
+                    domain VARCHAR(255),
                     UNIQUE(thread_id, key)
                 );
             """)
@@ -56,6 +61,9 @@ class MemoryHandler:
                     END IF;
                     IF NOT EXISTS (SELECT FROM pg_attribute WHERE attrelid = 'facts'::regclass AND attname = 'tags' AND NOT attisdropped) THEN
                         ALTER TABLE facts ADD COLUMN tags TEXT;
+                    END IF;
+                    IF NOT EXISTS (SELECT FROM pg_attribute WHERE attrelid = 'facts'::regclass AND attname = 'domain' AND NOT attisdropped) THEN
+                        ALTER TABLE facts ADD COLUMN domain VARCHAR(255);
                     END IF;
                 END
                 $$;
@@ -79,17 +87,15 @@ class MemoryHandler:
             return
 
         tags = list(tags) if tags else []
-        if domain:
-            tags.append(domain)
         tags_str = ",".join(tags) if tags else None
         with self.conn.cursor() as cur:
             query = sql.SQL(
                 """
-                INSERT INTO facts (thread_id, key, value, identity, tags) VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (thread_id, key) DO UPDATE SET value = EXCLUDED.value, identity = EXCLUDED.identity, tags = EXCLUDED.tags;
+                INSERT INTO facts (thread_id, key, value, identity, tags, domain) VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT (thread_id, key) DO UPDATE SET value = EXCLUDED.value, identity = EXCLUDED.identity, tags = EXCLUDED.tags, domain = EXCLUDED.domain;
             """
             )
-            cur.execute(query, (thread_id, key, value, identity, tags_str))
+            cur.execute(query, (thread_id, key, value, identity, tags_str, domain))
             self.conn.commit()
             print(
                 f"Added/Updated fact for thread {thread_id}: {key} = {value} "
@@ -128,21 +134,19 @@ class MemoryHandler:
             return []
 
         with self.conn.cursor() as cur:
-            query = (
-                "SELECT key, value, identity, locked, tags FROM facts WHERE thread_id = %s"
-            )
+            query = "SELECT key, value, identity, locked, tags FROM facts WHERE thread_id = %s"
             params = [thread_id]
             if tag:
                 query += " AND tags ILIKE %s"
                 params.append(f"%{tag}%")
             if domain:
-                query += " AND tags ILIKE %s"
-                params.append(f"%{domain}%")
+                query += " AND domain = %s"
+                params.append(domain)
             cur.execute(query, params)
             rows = cur.fetchall()
             result = []
             for key, value, identity, locked, tags_str in rows:
-                tags_list = [t for t in tags_str.split(',') if t] if tags_str else []
+                tags_list = [t for t in tags_str.split(",") if t] if tags_str else []
                 result.append((key, value, identity, locked, tags_list))
             return result
 
@@ -158,13 +162,11 @@ class MemoryHandler:
         if not self.conn:
             return
         tags = list(tags) if tags else []
-        if domain:
-            tags.append(domain)
         tags_str = ",".join(tags) if tags else None
         with self.conn.cursor() as cur:
             cur.execute(
-                "UPDATE facts SET value=%s, identity=%s, tags=%s WHERE thread_id=%s AND key=%s",
-                (value, identity, tags_str, thread_id, key),
+                "UPDATE facts SET value=%s, identity=%s, tags=%s, domain=%s WHERE thread_id=%s AND key=%s",
+                (value, identity, tags_str, domain, thread_id, key),
             )
             self.conn.commit()
 
@@ -199,4 +201,3 @@ class MemoryHandler:
         if self.conn:
             self.conn.close()
             print("PostgreSQL connection closed.")
-

@@ -6,9 +6,12 @@ def test_remember_command(monkeypatch):
     calls = []
 
     class DummyCM:
-        def __init__(self, thread_id="cli_thread", identity="cli_user", goal_tracker=None):
+        def __init__(
+            self, thread_id="cli_thread", identity="cli_user", goal_tracker=None
+        ):
             pass
-        def add_fact(self, key, value):
+
+        def add_fact(self, key, value, identity=None, domain=None, tags=None):
             calls.append((key, value))
 
     monkeypatch.setattr(main, "ContextManager", DummyCM)
@@ -16,4 +19,3 @@ def test_remember_command(monkeypatch):
     result = runner.invoke(main.app, ["remember", "foo", "bar"])
     assert result.exit_code == 0
     assert calls == [("foo", "bar")]
-

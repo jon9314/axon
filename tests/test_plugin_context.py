@@ -6,7 +6,7 @@ class DummyMemory:
     def __init__(self):
         self.add_calls = []
 
-    def add_fact(self, thread_id, key, value, identity=None):
+    def add_fact(self, thread_id, key, value, identity=None, domain=None, tags=None):
         self.add_calls.append((thread_id, key, value, identity))
 
 
@@ -21,7 +21,9 @@ class DummyGoals:
 def test_context_helpers():
     mem = DummyMemory()
     goals = DummyGoals()
-    ctx = PluginContext(memory_handler=mem, goal_tracker=goals, thread_id="t1", identity="bob")
+    ctx = PluginContext(
+        memory_handler=mem, goal_tracker=goals, thread_id="t1", identity="bob"
+    )
     ctx.add_fact("k", "v")
     ctx.add_goal("do it")
     assert mem.add_calls == [("t1", "k", "v", "bob")]

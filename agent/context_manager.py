@@ -1,7 +1,7 @@
 # axon/agent/context_manager.py
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Iterable
 
 from memory.memory_handler import MemoryHandler
 from agent.goal_tracker import GoalTracker
@@ -12,6 +12,7 @@ from config.settings import settings
 class ChatMessage:
     identity: str
     text: str
+
 
 class ContextManager:
     """Manages the current conversational context, including thread and identity."""
@@ -30,7 +31,14 @@ class ContextManager:
         )
         self.chat_history: List[ChatMessage] = []
 
-    def add_fact(self, key: str, value: str, identity: Optional[str] = None) -> None:
+    def add_fact(
+        self,
+        key: str,
+        value: str,
+        identity: Optional[str] = None,
+        domain: Optional[str] = None,
+        tags: Iterable[str] | None = None,
+    ) -> None:
         """
         Adds a fact to memory within the current context.
         """
@@ -39,6 +47,8 @@ class ContextManager:
             key=key,
             value=value,
             identity=identity or self.identity,
+            domain=domain,
+            tags=tags,
         )
 
     def get_fact(self, key: str, include_identity: bool = False):
@@ -61,12 +71,20 @@ class ContextManager:
         print(f"Context thread switched to: {thread_id}")
         self.thread_id = thread_id
 
-    def update_fact(self, key: str, value: str):
+    def update_fact(
+        self,
+        key: str,
+        value: str,
+        domain: Optional[str] = None,
+        tags: Iterable[str] | None = None,
+    ) -> None:
         self.memory_handler.update_fact(
             thread_id=self.thread_id,
             key=key,
             value=value,
             identity=self.identity,
+            domain=domain,
+            tags=tags,
         )
 
     def delete_fact(self, key: str) -> bool:
@@ -83,4 +101,3 @@ class ContextManager:
             self.goal_tracker.detect_and_add_goal(
                 self.thread_id, text, identity=speaker
             )
-
