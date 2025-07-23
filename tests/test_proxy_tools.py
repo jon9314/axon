@@ -3,10 +3,13 @@ from mcp_servers.filesystem_server import app as fs_app
 from mcp_servers.time_server import app as time_app
 from mcp_servers.calculator_server import app as calc_app
 from mcp_servers.markdown_backup_server import app as md_app
+from mcp_servers.github_server import app as gh_app
+from agent.tools.github_proxy import GitHubProxy
 from agent.tools.filesystem_proxy import FilesystemProxy
 from agent.tools.time_proxy import TimeProxy
 from agent.tools.calculator_proxy import CalculatorProxy
 from agent.tools.markdown_backup_proxy import MarkdownBackupProxy
+import subprocess
 import requests
 
 
@@ -65,3 +68,23 @@ def test_markdown_backup_proxy(monkeypatch, tmp_path):
     assert result["status"] == "ok"
     result = proxy.call({"command": "get", "name": "n1"})
     assert result["content"] == "hello"
+
+
+def test_github_proxy(monkeypatch, tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "-C", str(repo), "init"], check=True)
+    file = repo / "file.txt"
+    file.write_text("data", encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "file.txt"], check=True)
+    subprocess.run(["git", "-C", str(repo), "commit", "-m", "init"], check=True)
+
+    client = TestClient(gh_app)
+    get, _ = make_mock(client)
+    monkeypatch.setattr(requests, "get", get)
+    proxy = GitHubProxy()
+
+    result = proxy.call({"command": "list", "repo_path": str(repo)})
+    assert "file.txt" in result["files"]
+    result = proxy.call({"command": "read", "repo_path": str(repo), "file": "file.txt"})
+    assert result["content"] == "data"

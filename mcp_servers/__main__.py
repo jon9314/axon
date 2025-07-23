@@ -4,12 +4,14 @@ from .filesystem_server import app as fs_app
 from .time_server import app as time_app
 from .calculator_server import app as calc_app
 from .markdown_backup_server import app as md_app
+from .github_server import app as gh_app
 
 SERVERS = [
     (fs_app, 9001),
     (time_app, 9002),
     (calc_app, 9003),
     (md_app, 9004),
+    (gh_app, 9005),
 ]
 
 def run(app, port):
