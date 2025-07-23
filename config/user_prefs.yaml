@@ -1,0 +1,7 @@
+default_user:
+  persona: assistant
+  tone: neutral
+jon:
+  persona: partner
+  tone: informal
+  email: jon@example.com

@@ -37,6 +37,7 @@ class DummyConn:
 def test_profile_manager_round_trip(monkeypatch):
     dummy = DummyConn()
     monkeypatch.setattr("psycopg2.connect", lambda *a, **k: dummy)
+    monkeypatch.setattr(UserProfileManager, "load_from_yaml", lambda *a, **k: None)
     mgr = UserProfileManager(db_uri="postgresql://ignore")
     mgr.set_profile("jon", persona="partner", tone="informal", email="a@example.com")
     profile = mgr.get_profile("jon")
@@ -47,3 +48,27 @@ def test_profile_manager_round_trip(monkeypatch):
     mgr.close_connection()
     assert dummy.closed
 
+
+def test_load_from_yaml(monkeypatch, tmp_path):
+    dummy = DummyConn()
+    monkeypatch.setattr("psycopg2.connect", lambda *a, **k: dummy)
+    monkeypatch.setattr(UserProfileManager, "_ensure_table", lambda *a, **k: None)
+    mgr = UserProfileManager(
+        db_uri="postgresql://ignore", prefs_path=str(tmp_path / "none.yaml")
+    )
+
+    sample = tmp_path / "prefs.yaml"
+    sample.write_text("user1:\n  persona: friend\n  tone: happy\n")
+
+    calls = []
+    monkeypatch.setattr(mgr, "get_profile", lambda ident: None)
+    monkeypatch.setattr(
+        mgr,
+        "set_profile",
+        lambda ident, persona=None, tone=None, email=None: calls.append(
+            (ident, persona, tone, email)
+        ),
+    )
+
+    mgr.load_from_yaml(str(sample))
+    assert calls == [("user1", "friend", "happy", None)]

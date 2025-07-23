@@ -279,10 +279,12 @@ async def set_profile(
 
 
 @app.websocket("/ws/chat")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, identity: str = "default_user"):
     await websocket.accept()
     thread_id = "user_session_123"
-    logging.info(f"Client connected to WebSocket for thread_id: {thread_id}")
+    logging.info(
+        f"Client connected to WebSocket for thread_id: {thread_id} as {identity}"
+    )
 
     try:
         while True:
@@ -301,7 +303,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 pass
 
             # Automatically log goal-related messages
-            goal_tracker.detect_and_add_goal(thread_id, data, identity="default_user")
+            goal_tracker.detect_and_add_goal(thread_id, data, identity=identity)
 
             response_message = ""
             remember_match = re.match(r"remember (.*) is (.*)", data, re.IGNORECASE)
@@ -357,7 +359,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     response_message = f"I don't have a memory for '{key}'."
             else:
                 logging.info("No command recognized. Routing to LLM.")
-                identity = "default_user"
                 profile = profile_manager.get_profile(identity)
                 persona = profile.get("persona") if profile else None
                 tone = profile.get("tone") if profile else None
