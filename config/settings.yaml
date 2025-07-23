@@ -7,3 +7,7 @@ llm:
   default_local_model: "qwen3:8b"
   qwen_agent_generate_cfg:
     fncall_prompt_type: "nous"
+
+app:
+  mcp_mode: false
+  mcp_log_path: "mcp_traffic.json"

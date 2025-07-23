@@ -63,7 +63,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 **Optional:**
 
-- Paste handler tags response with `source: gpt` or `claude`
+ - Tag pasted responses with `source:gpt` or `source:claude`
 
 ---
 
@@ -131,7 +131,7 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 **Optional:**
 
-- Fuzzy matching like "next Thursday"
+ - Natural-language date parsing such as "next Thursday"
 
 ---
 
@@ -153,13 +153,13 @@ Cloud LLMs are **never called automatically**. Instead, Axon:
 
 **Optional:**
 
-- Text-to-speech or audio chime
+ - Provide text-to-speech or audio notifications
 
 ---
 
 ### 4.7 – External Calendar Export (Optional)
 
-**Description:** Export reminders to `.ics` or CalDAV-compatible feed
+**Description:** Implement `calendar_exporter.py` to generate `.ics` files or a CalDAV-compatible feed
 
 **File(s):**
 

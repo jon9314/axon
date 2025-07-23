@@ -43,3 +43,7 @@ jobs:
         # We need to install stubs for libraries that don't have inline types
         poetry run pip install types-pyyaml
         poetry run mypy .
+
+    - name: Run tests
+      run: |
+        poetry run pytest -q

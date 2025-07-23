@@ -16,6 +16,7 @@ class LlmSettings(BaseModel):
 class AppSettings(BaseModel):
     database: DatabaseSettings
     llm: LlmSettings
+    app: dict | None = None
 
 def load_settings() -> AppSettings:
     """Loads settings from the YAML file and validates them."""

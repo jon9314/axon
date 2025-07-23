@@ -69,7 +69,7 @@ Axon will:
 
 **Optional:**
 
-- Use to annotate memory creation times
+ - Annotate new memory entries with timestamps
 
 ---
 
@@ -121,7 +121,7 @@ Axon will:
 
 **Optional:**
 
-- Sync notes into vector DB for RAG-style hybrid retrieval
+ - Synchronize markdown notes with Qdrant for retrieval
 
 ---
 
@@ -146,7 +146,7 @@ Axon will:
 
 **Optional:**
 
-- Future plugin: auto-commit fixes
+ - Auto-commit patches via plugin
 
 **Status:** DONE
 
@@ -166,7 +166,7 @@ Axon will:
 
 **Optional:**
 
-- Attach source links to memory
+ - Capture documentation source URLs
 
 **Status:** DONE
 
@@ -186,7 +186,7 @@ Axon will:
 
 **Optional:**
 
-- Generate charts inline in frontend
+ - Render query results as charts in the UI
 
 **Status:** In Progress – CSV query server implemented
 
@@ -222,7 +222,7 @@ Axon will:
 
 **Optional:**
 
-- Add latency and failure metrics
+ - Record MCP latency and failure metrics in the router
 
 **Status:** DONE
 

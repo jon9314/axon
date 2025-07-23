@@ -68,6 +68,7 @@ class MemoryHandler:
         key: str,
         value: str,
         identity: Optional[str] = None,
+        domain: Optional[str] = None,
         tags: Optional[Iterable[str]] = None,
     ) -> None:
         """
@@ -77,6 +78,9 @@ class MemoryHandler:
             print("No database connection.")
             return
 
+        tags = list(tags) if tags else []
+        if domain:
+            tags.append(domain)
         tags_str = ",".join(tags) if tags else None
         with self.conn.cursor() as cur:
             query = sql.SQL(
@@ -113,7 +117,7 @@ class MemoryHandler:
             return (value, ident) if include_identity else value
 
     def list_facts(
-        self, thread_id: str, tag: Optional[str] = None
+        self, thread_id: str, tag: Optional[str] = None, domain: Optional[str] = None
     ) -> list[tuple[str, str, str | None, bool, list[str]]]:
         """Returns all facts for a thread including lock state and tags.
 
@@ -131,6 +135,9 @@ class MemoryHandler:
             if tag:
                 query += " AND tags ILIKE %s"
                 params.append(f"%{tag}%")
+            if domain:
+                query += " AND tags ILIKE %s"
+                params.append(f"%{domain}%")
             cur.execute(query, params)
             rows = cur.fetchall()
             result = []
@@ -145,10 +152,14 @@ class MemoryHandler:
         key: str,
         value: str,
         identity: Optional[str] = None,
+        domain: Optional[str] = None,
         tags: Optional[Iterable[str]] = None,
     ) -> None:
         if not self.conn:
             return
+        tags = list(tags) if tags else []
+        if domain:
+            tags.append(domain)
         tags_str = ",".join(tags) if tags else None
         with self.conn.cursor() as cur:
             cur.execute(
