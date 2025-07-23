@@ -28,6 +28,14 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] Docker Compose: Postgres + Qdrant + backend + frontend
 - [x] CI: GitHub Actions with mypy + ruff checks
 
+### Phase 1 Enhancements (Planned)
+- [ ] TUI-based CLI interface
+- [ ] Hybrid vector scoring and LLM confidence metrics
+- [ ] `mcp_mode` setting and JSON traffic logs
+- [ ] Domain-aware preload entries
+- [ ] Backend rate limiting and optional auth
+- [ ] Model selector dropdown in the UI
+
 ---
 
 ## 🧠 Phase 2: Memory & Plugin Enrichment
@@ -39,6 +47,14 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] Structured long-term goal tracking
 - [x] Manual note tagging + identity recognition
 - [x] Add support for CLI input memory injection
+
+### Phase 2 Improvements (Planned)
+- [ ] Domain scoping in memory tables and API
+- [ ] Mass deletion endpoints and CLI plugin reload
+- [ ] Permission scoping for plugins
+- [ ] Goal priority and deadline fields
+- [ ] Periodic prompts for deferred goals
+- [ ] Optional speaker-embedding logic
 
 ---
 
@@ -57,6 +73,13 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] **Text2SQL + Antvis**: structured querying and visualization *(basic CSV query server implemented)*
 - [x] **WolframAlpha / Prolog / Logic MCPs** (optional advanced logic)
 
+### Phase 3 Additions (Planned)
+- [ ] Timestamp new memory entries via Time MCP
+- [ ] Sync markdown notes with Qdrant
+- [ ] Auto-commit patches via GitHub tooling
+- [ ] Capture documentation source URLs and show charts
+- [ ] Record MCP latency/failure metrics
+
 ---
 
 ## ☁️ Phase 4: Remote Model & API Tooling (Optional)
@@ -66,6 +89,12 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [ ] UI support for paste-back workflow
 - [ ] Tool/plugin to watch clipboard and auto-insert output
 - [ ] Optional fallback through hosted proxy (manual consent only)
+
+### Phase 4 Extensions (Planned)
+- [ ] Tag pasted responses with source annotations
+- [ ] Natural-language date parsing for reminders
+- [ ] Text-to-speech or audio notifications
+- [ ] Calendar export utility with `.ics` generation
 
 ---
 

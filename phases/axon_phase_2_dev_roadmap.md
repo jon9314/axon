@@ -40,7 +40,7 @@ memory:
 
 **Optional:**
 
-- Add per-domain scoping (e.g., "work", "personal")
+- Introduce domain scoping (e.g., "work", "personal")
 
 ---
 
@@ -64,7 +64,7 @@ memory:
 
 **Optional:**
 
-- Support mass delete by context
+- Support mass deletion endpoints by context or domain
 
 ---
 
@@ -92,7 +92,7 @@ memory:
 
 **Optional:**
 
-- Hot-reload plugins while running
+- Hot-reload plugins via CLI command
 
 ---
 
@@ -120,7 +120,7 @@ plugins:
 
 **Optional:**
 
-- Add permission scoping (per-plugin)
+- Add permission scoping for plugins
 
 ---
 
@@ -145,7 +145,7 @@ plugins:
 
 **Optional:**
 
-- Add priority and deadline fields
+- Add priority and deadline fields to goals
 
 ---
 
@@ -170,7 +170,7 @@ plugins:
 
 **Optional:**
 
-- Add option to re-prompt user about old ideas
+- Periodic prompts for deferred goals
 
 ---
 
@@ -197,7 +197,7 @@ identity_tracking: true
 
 **Optional:**
 
-- Add speaker embedding matching (future ML enhancement)
+- Optional speaker-embedding logic
 
 ---
 

@@ -72,7 +72,7 @@ memory:
 
 **Optional:**
 
-- Add TUI wrapper for CLI later
+- Implement TUI CLI using the Textual library
 
 ---
 
@@ -143,7 +143,7 @@ qdrant:
 
 **Optional:**
 
-- Add hybrid scoring (recency + similarity)
+- Add hybrid scoring (recency + similarity) and expose a confidence metric in `LLMRouter`
 
 ---
 
@@ -198,8 +198,8 @@ qdrant:
 
 **Optional:**
 
-- Add `mcp_mode: true` toggle in settings
-- Log all MCP-formatted entries to a JSON file
+- Introduce `mcp_mode` option in `settings.yaml`
+- Log all MCP-formatted traffic to a JSON file
 
 ---
 
@@ -225,7 +225,7 @@ qdrant:
 
 **Optional:**
 
-- Add preload options by identity (e.g. “Cary”) or domain
+- Extend preload entries for identity or domain-specific facts
 
 ---
 
@@ -247,8 +247,8 @@ qdrant:
 
 **Optional:**
 
-- Rate limiting
-- Auth later
+- Implement rate limiting
+- Optional authentication hooks
 
 ---
 
@@ -269,7 +269,7 @@ qdrant:
 **Optional:**
 
 - Memory editing panel
-- Model selector dropdown
+- Model selector dropdown in the UI
 
 ---
 
