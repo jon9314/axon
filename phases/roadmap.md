@@ -52,7 +52,7 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] **Basic Memory**: backup or markdown-based memory overlay
 
 ### Secondary MCP Targets
-- [ ] **GitHub MCP**: repo access and edits
+- [ ] **GitHub MCP**: repo access and edits *(initial list/read/write done)*
 - [ ] **Context7 / DeepWiki / Docs**: documentation fetchers
 - [ ] **Text2SQL + Antvis**: structured querying and visualization
 - [ ] **WolframAlpha / Prolog / Logic MCPs** (optional advanced logic)

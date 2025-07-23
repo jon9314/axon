@@ -11,16 +11,18 @@ BASE_URL = os.environ.get("GITHUB_MCP_URL", "http://localhost:9005")
 class GitHubProxy(BaseTool):
     """Read GitHub repository files via MCP."""
 
-    description = "Read GitHub repository files via MCP"
+    description = "Read or write GitHub repository files via MCP"
     parameters = [
         {
             "name": "command",
             "type": "string",
-            "description": "Operation to perform: list or read",
+            "description": "Operation to perform: list, read or write",
             "required": True,
         },
         {"name": "repo_path", "type": "string", "description": "Local repo path"},
-        {"name": "file", "type": "string", "description": "File path when reading"},
+        {"name": "file", "type": "string", "description": "File path when reading or writing"},
+        {"name": "content", "type": "string", "description": "File content when writing"},
+        {"name": "message", "type": "string", "description": "Commit message when writing"},
     ]
 
     def __init__(self, cfg: Any | None = None):
@@ -38,6 +40,16 @@ class GitHubProxy(BaseTool):
                 f"{self.base_url}/read",
                 params={"repo_path": repo_path, "file": args.get("file")},
             )
+        elif command == "write":
+            resp = requests.post(
+                f"{self.base_url}/write",
+                params={
+                    "repo_path": repo_path,
+                    "file": args.get("file"),
+                    "message": args.get("message", "update"),
+                },
+                json={"content": args.get("content", "")},
+            )
         else:
             return f"Unknown command {command}"
         resp.raise_for_status()
@@ -46,7 +58,7 @@ class GitHubProxy(BaseTool):
 
 @plugin(
     name="github",
-    description="Read GitHub repository files via MCP",
+    description="Read or write GitHub repository files via MCP",
     usage="github(command='list', repo_path='path')",
 )
 def github(command: str, **kwargs):

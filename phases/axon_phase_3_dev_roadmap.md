@@ -148,6 +148,8 @@ Axon will:
 
 - Future plugin: auto-commit fixes
 
+**Status:** In Progress – basic list/read/write endpoints implemented
+
 ---
 
 ### 3.6 – Documentation MCPs (Context7, DeepWiki, MS Learn)
@@ -218,6 +220,8 @@ Axon will:
 
 - Add latency and failure metrics
 
+**Status:** DONE
+
 ---
 
 ### 3.9 – MCP Response Normalization
@@ -233,7 +237,7 @@ Axon will:
 - Translate MCP response JSON to readable summaries
 - Tag memory with source + confidence
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 

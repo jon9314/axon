@@ -76,5 +76,5 @@ reasoning enabled and how to pass the recommended `generate_cfg` settings.
 
 ## Roadmap progress
 
-Phases 0 through 3.4 have been completed, including the core MCP servers. See [phases/roadmap.md](phases/roadmap.md) for upcoming secondary MCP work.
+Phases 0 through 3.9 have been completed. Core MCP servers are stable and the GitHub service is partially implemented. See [phases/roadmap.md](phases/roadmap.md) for progress on additional secondary servers.
 
