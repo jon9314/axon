@@ -11,7 +11,7 @@ class GetOSVersion(BaseTool):
     """Return the host operating system version."""
 
     description = "Return the host operating system version"
-    parameters = []
+    parameters: list[Any] = []
 
     def call(self, params: Any, **kwargs) -> str:
         # No parameters needed, just verify empty input

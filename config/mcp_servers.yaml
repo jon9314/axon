@@ -13,3 +13,6 @@
 - name: github
   transport: http
   url: http://localhost:9005
+- name: docs
+  transport: http
+  url: http://localhost:9006
