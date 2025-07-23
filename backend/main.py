@@ -119,8 +119,10 @@ async def list_models():
 
 
 @app.get("/memory/{thread_id}")
-async def list_memory(thread_id: str, tag: str | None = None):
-    facts = memory_handler.list_facts(thread_id, tag)
+async def list_memory(
+    thread_id: str, tag: str | None = None, domain: str | None = None
+):
+    facts = memory_handler.list_facts(thread_id, tag, domain)
     return {
         "facts": [
             {
@@ -142,9 +144,12 @@ async def add_memory(
     value: str,
     identity: str | None = None,
     tags: str | None = None,
+    domain: str | None = None,
 ):
     tag_list = [t for t in tags.split(",") if t] if tags else None
-    memory_handler.add_fact(thread_id, key, value, identity, tags=tag_list)
+    memory_handler.add_fact(
+        thread_id, key, value, identity, domain=domain, tags=tag_list
+    )
     return {"status": "ok"}
 
 
@@ -155,9 +160,12 @@ async def update_memory(
     value: str,
     identity: str | None = None,
     tags: str | None = None,
+    domain: str | None = None,
 ):
     tag_list = [t for t in tags.split(",") if t] if tags else None
-    memory_handler.update_fact(thread_id, key, value, identity, tags=tag_list)
+    memory_handler.update_fact(
+        thread_id, key, value, identity, domain=domain, tags=tag_list
+    )
     return {"status": "ok"}
 
 

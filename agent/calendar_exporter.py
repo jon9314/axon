@@ -11,7 +11,10 @@ from icalendar import Calendar, Event
 
 class MemoryLike(Protocol):
     def list_facts(
-        self, thread_id: str, tag: str | None = None
+        self,
+        thread_id: str,
+        tag: str | None = None,
+        domain: str | None = None,
     ) -> list[tuple[str, str, str | None, bool, Iterable[str]]]: ...
 
 
