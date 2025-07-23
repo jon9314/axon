@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi import Body
 from pathlib import Path
 import subprocess
 
@@ -25,3 +26,25 @@ def read_file(repo_path: str, file: str):
     with open(target, "r", encoding="utf-8") as f:
         content = f.read()
     return {"content": content}
+
+
+@app.post("/write")
+def write_file(
+    repo_path: str,
+    file: str,
+    message: str = "update",
+    content: str = Body("", embed=True),
+):
+    repo_dir = Path(repo_path)
+    target = repo_dir / file
+    if not repo_dir.is_dir():
+        raise HTTPException(status_code=400, detail="invalid repo path")
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with open(target, "w", encoding="utf-8") as f:
+            f.write(content)
+        subprocess.run(["git", "-C", str(repo_dir), "add", file], check=True)
+        subprocess.run(["git", "-C", str(repo_dir), "commit", "-m", message], check=True)
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=400, detail=e.stderr)
+    return {"status": "ok"}
