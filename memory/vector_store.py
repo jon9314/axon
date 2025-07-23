@@ -5,11 +5,13 @@ from typing import Optional
 from qdrant_client import QdrantClient, models
 import uuid
 
+
 class VectorStore:
     """
     Handles interactions with the Qdrant vector database for storing
     and searching semantic memories.
     """
+
     def __init__(self, host: str, port: int):
         """
         Initializes the VectorStore and connects to the Qdrant client.
@@ -34,8 +36,10 @@ class VectorStore:
         # This operation is idempotent, so it's safe to call every time.
         self.client.recreate_collection(
             collection_name=collection_name,
-            vectors_config=models.VectorParams(size=len(vector), distance=models.Distance.COSINE),
-            on_disk_payload=True # Recommended for performance
+            vectors_config=models.VectorParams(
+                size=len(vector), distance=models.Distance.COSINE
+            ),
+            on_disk_payload=True,  # Recommended for performance
         )
 
         # Use a unique ID for each memory point
@@ -45,16 +49,16 @@ class VectorStore:
             collection_name=collection_name,
             points=[
                 models.PointStruct(
-                    id=point_id,
-                    vector=vector,
-                    payload={"text": text_content}
+                    id=point_id, vector=vector, payload={"text": text_content}
                 )
             ],
-            wait=True
+            wait=True,
         )
         print(f"Added memory to collection '{collection_name}'")
 
-    def search_memory(self, collection_name: str, query_vector: list[float], limit: int = 5):
+    def search_memory(
+        self, collection_name: str, query_vector: list[float], limit: int = 5
+    ):
         """
         Searches for similar memories in a Qdrant collection using a query vector.
         """
@@ -62,16 +66,29 @@ class VectorStore:
             print("No Qdrant client connection.")
             return []
 
+    def hybrid_search(
+        self,
+        collection_name: str,
+        query_vector: list[float],
+        llm_confidence: float,
+        limit: int = 5,
+    ) -> list[models.ScoredPoint]:
+        """Return search results weighted by an LLM confidence score."""
+        results = self.search_memory(collection_name, query_vector, limit)
+        for r in results:
+            if hasattr(r, "score"):
+                r.score = 0.5 * r.score + 0.5 * llm_confidence
+        return results
+
         try:
             search_result = self.client.search(
-                collection_name=collection_name,
-                query_vector=query_vector,
-                limit=limit
+                collection_name=collection_name, query_vector=query_vector, limit=limit
             )
-            print(f"Searched collection '{collection_name}' and found {len(search_result)} results.")
+            print(
+                f"Searched collection '{collection_name}' and found {len(search_result)} results."
+            )
             return search_result
         except Exception as e:
             # This can happen if the collection doesn't exist yet.
             print(f"Could not search collection '{collection_name}': {e}")
             return []
-

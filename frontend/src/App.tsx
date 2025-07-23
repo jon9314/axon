@@ -26,6 +26,7 @@ function App() {
   const [newTags, setNewTags] = useState('');
   const [cloudPrompt, setCloudPrompt] = useState<{model: string; prompt: string} | null>(null);
   const [pasteValue, setPasteValue] = useState('');
+  const [selectedModel, setSelectedModel] = useState('qwen3:8b');
   const ws = useRef<WebSocket | null>(null);
   const sendMcp = (tool: string, args: any) => {
     if (ws.current?.readyState !== WebSocket.OPEN) return;
@@ -86,7 +87,7 @@ function App() {
     const userMessage: Message = { sender: 'user', text: inputValue };
     setMessages(prevMessages => [...prevMessages, userMessage]);
 
-    ws.current.send(inputValue);
+    ws.current.send(JSON.stringify({ text: inputValue, model: selectedModel }));
     setInputValue('');
   };
 
@@ -134,6 +135,10 @@ function App() {
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
           />
+          <select value={selectedModel} onChange={(e)=>setSelectedModel(e.target.value)}>
+            <option value="qwen3:8b">qwen3:8b</option>
+            <option value="mock-model">mock-model</option>
+          </select>
           <button onClick={handleSendMessage}>Send</button>
           <button onClick={() => sendMcp('time', {command: 'now'})}>Time</button>
           <button onClick={() => sendMcp('calculator', {command: 'evaluate', expr: '2+2'})}>Calc</button>
