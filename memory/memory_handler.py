@@ -182,6 +182,26 @@ class MemoryHandler:
             self.conn.commit()
             return deleted
 
+    def delete_facts(
+        self, thread_id: str, domain: Optional[str] = None, tag: Optional[str] = None
+    ) -> int:
+        """Delete multiple facts optionally filtered by domain or tag."""
+        if not self.conn:
+            return 0
+        with self.conn.cursor() as cur:
+            query = "DELETE FROM facts WHERE thread_id=%s AND locked=FALSE"
+            params = [thread_id]
+            if domain:
+                query += " AND domain=%s"
+                params.append(domain)
+            if tag:
+                query += " AND tags ILIKE %s"
+                params.append(f"%{tag}%")
+            cur.execute(query, params)
+            deleted = cur.rowcount
+            self.conn.commit()
+            return deleted
+
     def set_lock(self, thread_id: str, key: str, locked: bool) -> bool:
         if not self.conn:
             return False

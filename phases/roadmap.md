@@ -50,7 +50,7 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 
 ### Phase 2 Improvements (Planned)
 - [ ] Domain scoping in memory tables and API
-- [ ] Mass deletion endpoints and CLI plugin reload
+- [x] Mass deletion endpoints and CLI plugin reload
 - [ ] Permission scoping for plugins
 - [ ] Goal priority and deadline fields
 - [ ] Periodic prompts for deferred goals

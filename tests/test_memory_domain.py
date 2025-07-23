@@ -5,6 +5,7 @@ class DummyCursor:
     def __init__(self):
         self.queries = []
         self.fetchall_result = []
+        self.rowcount = 0
 
     def execute(self, query, params=None):
         self.queries.append((str(query).strip(), params))
@@ -53,4 +54,16 @@ def test_list_facts_domain(monkeypatch):
     handler.list_facts("t1", domain="work")
     query, params = cur.queries[-1]
     assert "domain = %s" in query
+    assert params[-1] == "work"
+
+
+def test_delete_facts_domain(monkeypatch):
+    cur = DummyCursor()
+    conn = DummyConn(cur)
+    monkeypatch.setattr("psycopg2.connect", lambda *a, **k: conn)
+    handler = MemoryHandler(db_uri="postgresql://ignore")
+    handler.delete_facts("t1", domain="work")
+    query, params = cur.queries[-1]
+    assert "DELETE FROM facts" in query
+    assert "domain=%s" in query
     assert params[-1] == "work"

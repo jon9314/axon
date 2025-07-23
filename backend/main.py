@@ -175,6 +175,15 @@ async def delete_memory(thread_id: str, key: str):
     return {"deleted": deleted}
 
 
+@app.delete("/memory/{thread_id}")
+async def delete_memory_bulk(
+    thread_id: str, domain: str | None = None, tag: str | None = None
+):
+    """Delete multiple facts by thread, optionally filtered."""
+    deleted = memory_handler.delete_facts(thread_id, domain=domain, tag=tag)
+    return {"deleted": deleted}
+
+
 @app.post("/memory/{thread_id}/{key}/lock")
 async def lock_memory(thread_id: str, key: str, locked: bool = True):
     changed = memory_handler.set_lock(thread_id, key, locked)
@@ -237,6 +246,13 @@ async def list_deferred(thread_id: str):
             for g_id, text, done, ident, deferred in goals
         ]
     }
+
+
+@app.delete("/goals/{thread_id}")
+async def delete_goals(thread_id: str):
+    """Delete all goals for a thread."""
+    deleted = goal_tracker.delete_goals(thread_id)
+    return {"deleted": deleted}
 
 
 @app.get("/profiles/{identity}")
