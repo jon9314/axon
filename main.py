@@ -156,6 +156,14 @@ def clipboard_monitor_cmd(seconds: int = 15) -> None:
     print(result)
 
 
+@app.command("voice-shell")
+def voice_shell_cmd() -> None:
+    """Start the hands-free voice shell plugin."""
+    from plugins.voice_shell import voice_shell
+
+    voice_shell()
+
+
 @app.command()
 def remember(
     topic: str, fact: str, thread_id: str = "cli_thread", identity: str = "cli_user"
