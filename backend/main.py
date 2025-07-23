@@ -10,6 +10,8 @@ from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from agent.mcp_handler import MCPHandler
 from agent.mcp_router import mcp_router
 from agent.pasteback_handler import PastebackHandler
+from agent.reminder import ReminderManager
+from agent.notifier import Notifier
 from memory.user_profile import UserProfileManager
 import re
 import logging
@@ -35,6 +37,7 @@ llm_router = LLMRouter()
 mcp_handler = MCPHandler()
 pasteback_handler = PastebackHandler(memory_handler)
 profile_manager = UserProfileManager(db_uri=settings.database.postgres_uri)
+reminder_manager = ReminderManager(Notifier(), memory_handler)
 
 
 @app.on_event("startup")
@@ -113,6 +116,24 @@ async def delete_memory(thread_id: str, key: str):
 async def lock_memory(thread_id: str, key: str, locked: bool = True):
     changed = memory_handler.set_lock(thread_id, key, locked)
     return {"locked": changed}
+
+
+@app.post("/reminders/{thread_id}")
+async def add_reminder(thread_id: str, message: str, delay: int = 60):
+    key = reminder_manager.schedule(message, delay, thread_id)
+    return {"key": key}
+
+
+@app.get("/reminders/{thread_id}")
+async def list_reminders(thread_id: str):
+    reminders = reminder_manager.list_reminders(thread_id)
+    return {"reminders": reminders}
+
+
+@app.delete("/reminders/{thread_id}/{key}")
+async def delete_reminder(thread_id: str, key: str):
+    deleted = reminder_manager.delete_reminder(thread_id, key)
+    return {"deleted": deleted}
 
 
 @app.post("/goals/{thread_id}")

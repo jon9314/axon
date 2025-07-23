@@ -32,7 +32,10 @@ class LLMRouter:
         return self.assistant
 
     def _needs_cloud(self, prompt: str) -> bool:
-        """Simple heuristic to decide if a cloud model should be suggested."""
+        """Heuristic to decide if a cloud model should be suggested."""
+        lowered = prompt.lower()
+        if any(k in lowered for k in ("summarize", "summary", "analyze", "analysis")):
+            return True
         return len(prompt) > 400
 
     def _extract_text(self, response: Iterable[Dict[str, Any]] | Iterable[Any]) -> str:
