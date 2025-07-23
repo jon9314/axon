@@ -29,8 +29,10 @@ python main.py remember "topic" "fact"
 This writes the key/value pair directly to Axon's memory.
 
 Goals can be stored via the `/goals/{thread_id}` API for simple task tracking.
+Each goal accepts optional `priority` and `deadline` fields.
 Ideas that sound vague ("someday I might...") are marked as **deferred** and
-can be listed via `/goals/{thread_id}/deferred`.
+trigger periodic reminder prompts. They can be listed via
+`/goals/{thread_id}/deferred`.
 
 ## Docker Compose
 

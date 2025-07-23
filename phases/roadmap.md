@@ -52,8 +52,8 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [ ] Domain scoping in memory tables and API
 - [x] Mass deletion endpoints and CLI plugin reload
 - [ ] Permission scoping for plugins
-- [ ] Goal priority and deadline fields
-- [ ] Periodic prompts for deferred goals
+- [x] Goal priority and deadline fields
+- [x] Periodic prompts for deferred goals
 - [ ] Optional speaker-embedding logic
 
 ---
