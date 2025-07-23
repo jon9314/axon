@@ -8,8 +8,8 @@ def evaluate(expr: str):
     try:
         # WARNING: eval is used for simplicity; avoid in production
         result = eval(expr, {"__builtins__": {}}, math.__dict__)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err)) from err
     return {"result": result}
 
 @app.get("/percent")

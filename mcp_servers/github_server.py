@@ -12,8 +12,8 @@ def list_repo(repo_path: str):
         raise HTTPException(status_code=400, detail="invalid repo path")
     try:
         result = subprocess.check_output(["git", "-C", str(repo_dir), "ls-files"], text=True)
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=400, detail=e.stderr)
+    except subprocess.CalledProcessError as err:
+        raise HTTPException(status_code=400, detail=err.stderr) from err
     files = result.strip().splitlines()
     return {"files": files}
 
@@ -45,6 +45,6 @@ def write_file(
             f.write(content)
         subprocess.run(["git", "-C", str(repo_dir), "add", file], check=True)
         subprocess.run(["git", "-C", str(repo_dir), "commit", "-m", message], check=True)
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=400, detail=e.stderr)
+    except subprocess.CalledProcessError as err:
+        raise HTTPException(status_code=400, detail=err.stderr) from err
     return {"status": "ok"}

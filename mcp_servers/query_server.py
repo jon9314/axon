@@ -28,8 +28,8 @@ def run_query(csv_path: str, sql: str):
     )
     try:
         cur.execute(sql)
-    except sqlite3.Error as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except sqlite3.Error as err:
+        raise HTTPException(status_code=400, detail=str(err)) from err
     rows = cur.fetchall()
     return rows
 
