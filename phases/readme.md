@@ -93,5 +93,5 @@ See `ROADMAP.md`.
 
 ## 🔐 License
 
-MIT License
+MIT License (see [LICENSE](../LICENSE))
 
