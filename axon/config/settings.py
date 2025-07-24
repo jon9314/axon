@@ -160,7 +160,7 @@ def validate_or_die() -> Settings:
         for err in exc.error.errors():
             loc = ".".join(str(p) for p in err["loc"])
             print(f"- {loc}: {err['msg']}")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
 
 def schema_json() -> str:

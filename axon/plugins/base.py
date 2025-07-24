@@ -1,37 +1,49 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from collections.abc import Mapping
+from typing import Generic, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-from .permissions import Permission
+from .manifest import Manifest
+from .permissions import Permission, guard
+
+InputT = TypeVar("InputT", bound=BaseModel)
+OutputT = TypeVar("OutputT", bound=BaseModel)
 
 
-class Plugin(ABC):
+class _AnyModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+
+class Plugin(ABC, Generic[InputT, OutputT]):
     """Base class for Axon plugins."""
 
-    def __init__(self, manifest: dict[str, Any]):
-        self.manifest = manifest
-        perms = manifest.get("permissions", [])
-        self.permissions: set[Permission] = {Permission(p) for p in perms}
+    input_model: type[BaseModel] = _AnyModel
+    output_model: type[BaseModel] = _AnyModel
 
-    def check_permission(self, perm: Permission) -> None:
-        if perm not in self.permissions:
-            raise PermissionError(f"Permission '{perm}' not granted for {self.manifest['name']}")
+    def __init__(self, manifest: Manifest, *, dry_run: bool = False) -> None:
+        self.manifest = manifest
+        self.permissions: set[Permission] = set(manifest.permissions)
+        self.dry_run = dry_run
+
+    def require(self, perm: Permission) -> None:
+        """Check permission via the guard."""
+        guard(perm, self.permissions, dry_run=self.dry_run)
 
     @abstractmethod
     def load(self, config: BaseModel | None) -> None:
         """Initialize plugin with optional validated configuration."""
 
     @abstractmethod
-    def describe(self) -> dict[str, Any]:
+    def describe(self) -> Mapping[str, str]:
         """Return plugin description and capabilities."""
 
     @abstractmethod
-    def execute(self, data: Any) -> Any:
+    def execute(self, data: InputT) -> OutputT:
         """Execute the plugin action."""
 
-    def shutdown(self) -> None:
+    def shutdown(self) -> None:  # pragma: no cover - default no-op
         """Clean up resources when unloading."""
         return

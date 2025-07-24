@@ -1,4 +1,5 @@
 name: clipboard_monitor
-version: "1.0"
+version: "2.0"
 description: Watch clipboard for updates for a few seconds
+entrypoint: clipboard_monitor:ClipboardMonitorPlugin
 permissions: []

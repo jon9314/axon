@@ -1,4 +1,5 @@
 name: remember_goal
-version: "1.0"
+version: "2.0"
 description: Store a fact and log a goal
+entrypoint: fact_goal:RememberGoalPlugin
 permissions: []

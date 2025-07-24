@@ -1,4 +1,4 @@
-# axon/plugins/system_info.py
+from __future__ import annotations
 
 import platform
 from typing import Any
@@ -9,6 +9,14 @@ from qwen_agent.tools.base import BaseTool, register_tool
 from axon.plugins.base import Plugin
 
 
+class EmptyInput(BaseModel):
+    pass
+
+
+class InfoOutput(BaseModel):
+    text: str
+
+
 @register_tool("get_os_version")
 class GetOSVersion(BaseTool):
     """Return the host operating system version."""
@@ -16,27 +24,26 @@ class GetOSVersion(BaseTool):
     description = "Return the host operating system version"
     parameters: list[Any] = []
 
-    def call(self, params: Any, **kwargs) -> str:
-        # No parameters needed, just verify empty input
+    def call(self, params: dict, **kwargs) -> str:
         self._verify_json_format_args(params)
         return f"The current OS is: {platform.system()} {platform.release()}"
 
 
-class SystemInfoPlugin(Plugin):
+class SystemInfoPlugin(Plugin[EmptyInput, InfoOutput]):
     """Plugin returning OS information."""
 
-    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - no op
+    input_model = EmptyInput
+    output_model = InfoOutput
+
+    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - simple
         return
 
-    def describe(self) -> dict[str, Any]:
-        return {
-            "name": self.manifest["name"],
-            "description": self.manifest["description"],
-        }
+    def describe(self) -> dict[str, str]:
+        return {"name": self.manifest.name, "description": self.manifest.description}
 
-    def execute(self, data: Any) -> str:
+    def execute(self, data: EmptyInput) -> InfoOutput:
         tool = GetOSVersion()
-        return tool.call({})
+        return InfoOutput(text=tool.call({}))
 
 
 PLUGIN_CLASS = SystemInfoPlugin
