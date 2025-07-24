@@ -8,10 +8,19 @@ class DummyQdrantClient:
         self.collections = {}
         self.indices = []
 
+    def create_collection(self, collection_name, vectors_config, on_disk_payload=True):
+        self.collections.setdefault(collection_name, [])
+
+    def get_collection(self, collection_name):
+        if collection_name not in self.collections:
+            raise ValueError("Collection not found")
+        return self.collections[collection_name]
+
     def recreate_collection(
         self, collection_name, vectors_config, on_disk_payload=True
     ):
-        self.collections.setdefault(collection_name, [])
+        # Compatibility shim for older tests
+        self.collections[collection_name] = []
 
     def create_payload_index(
         self,
