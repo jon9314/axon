@@ -7,6 +7,7 @@ import subprocess
 from typing import Optional
 
 from agent.plugin_loader import plugin
+import time
 
 try:  # pragma: no cover - optional deps
     from openwakeword.model import Model as WakeWordModel  # type: ignore
@@ -47,10 +48,25 @@ def _record(duration: float = 5.0, rate: int = 16000) -> Optional[bytes]:
 @plugin(
     name="voice_shell",
     description="Start a hands-free voice shell",
-    usage="voice_shell()",
+    usage="voice_shell(timeout=30)",
 )
-def voice_shell(model_path: str | None = None, wakeword: str = "axon") -> None:
-    """Listen for a wake word and respond via speech."""
+def voice_shell(
+    model_path: str | None = None,
+    wakeword: str = "axon",
+    timeout: float | None = None,
+) -> None:
+    """Listen for a wake word and respond via speech.
+
+    Parameters
+    ----------
+    model_path:
+        Optional custom wake word model path.
+    wakeword:
+        Keyword that triggers recording.
+    timeout:
+        Maximum number of seconds to listen before exiting. ``None`` disables
+        the time limit.
+    """
     if WakeWordModel is None or whisper is None:
         print("openwakeword and whisper packages required")
         return
@@ -58,9 +74,17 @@ def voice_shell(model_path: str | None = None, wakeword: str = "axon") -> None:
     wake = WakeWordModel(wakeword)
     asr = whisper.load_model("base")
 
-    print(f"Say '{wakeword}' to begin recording. Ctrl+C to exit.")
+    message = f"Say '{wakeword}' to begin recording."
+    if timeout:
+        message += f" Listening for {int(timeout)} seconds."
+    message += " Ctrl+C to exit."
+    print(message)
+    start = time.monotonic()
     try:
         while True:
+            if timeout is not None and time.monotonic() - start > timeout:
+                print("Time limit reached, exiting voice shell")
+                break
             data = _record(2.0)
             if data is None:
                 break
