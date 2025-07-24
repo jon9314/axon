@@ -54,6 +54,19 @@ def load_plugins(hot_reload: bool = False):
                             plugin_module = importlib.util.module_from_spec(spec)
                             spec.loader.exec_module(plugin_module)
                             sys.modules[module_name] = plugin_module
+
+                            # Register submodule on parent package so that
+                            # 'agent.tools.<name>' resolves correctly when
+                            # patched or imported elsewhere.
+                            parent_name, _, child_name = module_name.rpartition(".")
+                            try:
+                                parent_module = importlib.import_module(parent_name)
+                                setattr(parent_module, child_name, plugin_module)
+                            except Exception:  # pragma: no cover - log and continue
+                                logging.exception(
+                                    "Failed to register plugin %s on parent module",
+                                    module_name,
+                                )
                         else:
                             logging.error(
                                 "Could not create spec for plugin: %s", filename
