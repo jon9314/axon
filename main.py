@@ -11,14 +11,14 @@ from rich.prompt import Prompt
 from agent.context_manager import ContextManager
 from agent.mcp_router import MCPRouter
 from agent.reminder import ReminderManager
-from axon.plugins.loader import PluginLoader
-from memory.user_profile import UserProfileManager
 from axon.config.settings import (
     get_settings,
     reload_settings,
     schema_json,
     validate_or_die,
 )
+from axon.plugins.loader import PluginLoader
+from memory.user_profile import UserProfileManager
 
 # Global managers used across commands
 profile_manager = UserProfileManager()
@@ -63,6 +63,33 @@ def reload_plugins_cmd() -> None:
     """Reload plugins from disk and display the available set."""
     plugin_loader.discover()
     print(f"Plugins loaded: {list(plugin_loader.plugins.keys())}")
+
+
+@plugins_app.command("list")
+def list_plugins() -> None:
+    plugin_loader.discover()
+    for m in plugin_loader.manifests.values():
+        perms = ",".join(p.value for p in m.permissions) or "-"
+        print(f"{m.name} {m.version} {perms}")
+
+
+@plugins_app.command("doctor")
+def doctor_plugins() -> None:
+    try:
+        plugin_loader.discover()
+        print(f"{len(plugin_loader.plugins)} plugins ok")
+    except Exception as exc:
+        print(f"Plugin validation failed: {exc}")
+
+
+@plugins_app.command("run")
+def run_plugin(name: str, payload: str = "{}") -> None:
+    import json
+
+    plugin_loader.discover()
+    data = json.loads(payload)
+    result = plugin_loader.execute(name, data)
+    print(result)
 
 
 @app.command()
@@ -185,10 +212,9 @@ def clipboard_monitor_cmd(seconds: int = 15) -> None:
 @app.command("voice-shell")
 def voice_shell_cmd(timeout: float = 0.0) -> None:
     """Start the hands-free voice shell plugin."""
-    from plugins.voice_shell import voice_shell
-
     t = timeout if timeout > 0 else None
-    voice_shell(timeout=t)
+    plugin_loader.discover()
+    plugin_loader.execute("voice_shell", {"timeout": t})
 
 
 @app.command()

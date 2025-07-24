@@ -1,16 +1,16 @@
 from typer.testing import CliRunner
-import importlib
+
 import main
 
 
 def test_voice_shell_timeout(monkeypatch):
     calls = []
 
-    def dummy_voice_shell(*, timeout=None, model_path=None, wakeword="axon"):
-        calls.append(timeout)
+    def dummy_execute(name: str, data: dict) -> None:
+        calls.append(data["timeout"])
 
-    module = importlib.import_module("plugins.voice_shell")
-    monkeypatch.setattr(module, "voice_shell", dummy_voice_shell)
+    monkeypatch.setattr(main.plugin_loader, "discover", lambda: None)
+    monkeypatch.setattr(main.plugin_loader, "execute", dummy_execute)
     runner = CliRunner()
     result = runner.invoke(main.app, ["voice-shell", "--timeout", "5"])
     assert result.exit_code == 0

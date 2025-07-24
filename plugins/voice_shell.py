@@ -1,10 +1,8 @@
-"""Hands-free voice command shell using openwakeword and whisper."""
-
 from __future__ import annotations
 
 import shutil
 import subprocess
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -22,7 +20,17 @@ try:  # pragma: no cover - optional deps
 except Exception:  # pragma: no cover - optional deps
     whisper = None  # type: ignore
 
-__all__ = ["VoiceShellPlugin", "voice_shell"]
+__all__ = ["VoiceShellPlugin"]
+
+
+class ShellInput(BaseModel):
+    timeout: Optional[float] = None
+    model_path: Optional[str] = None
+    wakeword: str = "axon"
+
+
+class ShellOutput(BaseModel):
+    result: str | None = None
 
 
 def _say(text: str) -> None:
@@ -46,32 +54,23 @@ def _record(duration: float = 5.0, rate: int = 16000) -> Optional[bytes]:
     return audio.tobytes()
 
 
-class VoiceShellPlugin(Plugin):
+class VoiceShellPlugin(Plugin[ShellInput, ShellOutput]):
     """Hands-free voice shell."""
 
-    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - no op
+    input_model = ShellInput
+    output_model = ShellOutput
+
+    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - simple
         return
 
-    def describe(self) -> dict[str, Any]:
-        return {
-            "name": self.manifest["name"],
-            "description": self.manifest["description"],
-        }
+    def describe(self) -> dict[str, str]:
+        return {"name": self.manifest.name, "description": self.manifest.description}
 
-    def execute(self, data: Any) -> None:
-        """Run the voice shell (simplified for tests)."""
+    def execute(self, data: ShellInput) -> ShellOutput:
         if WakeWordModel is None or whisper is None:  # pragma: no cover - optional deps
-            print("openwakeword and whisper packages required")
-            return
-        print("Voice shell started")
+            return ShellOutput(result="openwakeword and whisper packages required")
+        _say("Voice shell started")
+        return ShellOutput(result=None)
 
 
 PLUGIN_CLASS = VoiceShellPlugin
-
-
-def voice_shell(
-    *, timeout: float | None = None, model_path: str | None = None, wakeword: str = "axon"
-) -> None:
-    """Entry point used by CLI tests."""
-    plugin = VoiceShellPlugin({"name": "voice_shell", "description": "voice shell"})
-    plugin.execute({"timeout": timeout, "model_path": model_path, "wakeword": wakeword})

@@ -41,7 +41,10 @@ def test_demo_plugin(monkeypatch):
     monkeypatch.setattr(context, "goal_tracker", goals)
     loader = PluginLoader()
     loader.discover()
-    result = loader.execute("remember_goal", {"key": "topic", "value": "fact", "goal": "goal text"})
-    assert result == "ok"
+    result = loader.execute(
+        "remember_goal",
+        {"key": "topic", "value": "fact", "goal": "goal text"},
+    )
+    assert result.result == "ok"
     assert mem.add_calls
     assert goals.calls

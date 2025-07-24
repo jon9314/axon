@@ -1,10 +1,26 @@
+from __future__ import annotations
+
 import time
-from typing import Any
 
 from pydantic import BaseModel
 from qwen_agent.tools.base import BaseTool, register_tool
 
 from axon.plugins.base import Plugin
+
+try:  # pragma: no cover - optional deps
+    import keyboard
+    import pyperclip
+except Exception:  # pragma: no cover - optional deps
+    pyperclip = None
+    keyboard = None
+
+
+class MonitorInput(BaseModel):
+    seconds: int = 15
+
+
+class MonitorOutput(BaseModel):
+    items: list[str]
 
 
 @register_tool("clipboard_monitor")
@@ -22,7 +38,7 @@ class ClipboardMonitor(BaseTool):
         }
     ]
 
-    def call(self, params: Any, **kwargs):
+    def call(self, params: dict, **kwargs) -> list[str] | str:
         args = self._verify_json_format_args(params)
         seconds = int(args.get("seconds", 15))
         if not pyperclip or not keyboard:
@@ -39,29 +55,24 @@ class ClipboardMonitor(BaseTool):
         return seen
 
 
-try:
-    import keyboard
-    import pyperclip
-except Exception:  # pragma: no cover - optional dependency
-    pyperclip = None
-    keyboard = None
-
-
-class ClipboardMonitorPlugin(Plugin):
+class ClipboardMonitorPlugin(Plugin[MonitorInput, MonitorOutput]):
     """Plugin wrapper for clipboard monitoring."""
 
-    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - no op
+    input_model = MonitorInput
+    output_model = MonitorOutput
+
+    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - simple
         return
 
-    def describe(self) -> dict[str, Any]:
-        return {
-            "name": self.manifest["name"],
-            "description": self.manifest["description"],
-        }
+    def describe(self) -> dict[str, str]:
+        return {"name": self.manifest.name, "description": self.manifest.description}
 
-    def execute(self, data: Any) -> Any:
+    def execute(self, data: MonitorInput) -> MonitorOutput:
         tool = ClipboardMonitor()
-        return tool.call({"seconds": data.get("seconds", 15)})
+        result = tool.call({"seconds": data.seconds})
+        if isinstance(result, list):
+            return MonitorOutput(items=result)
+        return MonitorOutput(items=[result])
 
 
 PLUGIN_CLASS = ClipboardMonitorPlugin

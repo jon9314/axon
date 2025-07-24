@@ -1,4 +1,5 @@
 name: echo
-version: "1.0"
+version: "2.0"
 description: Echo back the provided text
+entrypoint: echo:EchoPlugin
 permissions: []
