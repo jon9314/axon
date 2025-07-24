@@ -9,6 +9,7 @@ class DatabaseSettings(BaseModel):
     postgres_uri: str
     qdrant_host: str
     qdrant_port: int
+    redis_url: str = "redis://localhost:6379/0"
 
 
 class LlmSettings(BaseModel):
