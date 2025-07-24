@@ -10,6 +10,7 @@ from fastapi import (
 )
 from starlette.middleware.base import BaseHTTPMiddleware
 from typing import Dict, List
+import redis.asyncio as redis
 from memory.memory_handler import MemoryHandler
 from memory.preload import preload
 from config.settings import settings
@@ -47,6 +48,11 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         self.limit = limit
         self.token = token
         self.calls: Dict[str, List[float]] = {}
+        self.redis = (
+            redis.from_url(settings.database.redis_url)
+            if settings.database.redis_url
+            else None
+        )
 
     async def dispatch(self, request: Request, call_next):
         if self.token and request.headers.get("X-API-Token") != self.token:
@@ -54,12 +60,31 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
-        history = self.calls.setdefault(client_ip, [])
-        history = [t for t in history if now - t < 60]
-        if len(history) >= self.limit:
-            return Response(status_code=429)
-        history.append(now)
-        self.calls[client_ip] = history
+        if self.redis:
+            key = f"rate:{client_ip}"
+            try:
+                await self.redis.zremrangebyscore(key, 0, now - 60)
+                count = await self.redis.zcard(key)
+                if count >= self.limit:
+                    return Response(status_code=429)
+                await self.redis.zadd(key, {now: now})
+                await self.redis.expire(key, 60)
+            except Exception as exc:  # pragma: no cover - optional Redis
+                logging.warning("Redis error: %s", exc)
+                self.redis = None
+                history = self.calls.setdefault(client_ip, [])
+                history = [t for t in history if now - t < 60]
+                if len(history) >= self.limit:
+                    return Response(status_code=429)
+                history.append(now)
+                self.calls[client_ip] = history
+        else:
+            history = self.calls.setdefault(client_ip, [])
+            history = [t for t in history if now - t < 60]
+            if len(history) >= self.limit:
+                return Response(status_code=429)
+            history.append(now)
+            self.calls[client_ip] = history
         return await call_next(request)
 
 

@@ -2,6 +2,7 @@ database:
   postgres_uri: "postgresql://user:password@localhost:5432/axon_db"
   qdrant_host: "localhost"
   qdrant_port: 6333
+  redis_url: "redis://localhost:6379/0"
 
 llm:
   default_local_model: "qwen3:8b"
