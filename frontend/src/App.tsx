@@ -28,7 +28,7 @@ function App() {
   const [pasteValue, setPasteValue] = useState('');
   const [selectedModel, setSelectedModel] = useState('qwen3:8b');
   const ws = useRef<WebSocket | null>(null);
-  const sendMcp = (tool: string, args: any) => {
+  const sendMcp = (tool: string, args: Record<string, unknown>) => {
     if (ws.current?.readyState !== WebSocket.OPEN) return;
     const msg = {
       mcp_protocol_version: '1.0',
@@ -61,7 +61,7 @@ function App() {
           setMessages(prev => [...prev, agentResponse]);
           return;
         }
-      } catch (_) {
+      } catch {
         // not JSON
       }
       const agentResponse: Message = { sender: 'agent', text: event.data };
