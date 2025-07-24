@@ -53,3 +53,11 @@ def test_notify_summary(monkeypatch):
     tracker._notify_summary("t1", 0)
     assert notifier.calls
     assert "fast on Monday" in notifier.calls[0][1]
+
+
+def test_summarize_habits():
+    mem = DummyMemory()
+    tracker = HabitTracker(DummyGoals(), mem, notifier=DummyNotifier())
+    tracker.update_habits("t1")
+    summary = tracker.summarize_habits("t1")
+    assert "fast on Monday" in summary

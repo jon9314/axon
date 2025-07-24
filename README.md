@@ -21,6 +21,30 @@ Run `python main.py cli` to load plugins (hot reloaded each launch). Each
 plugin provides metadata such as name, description, and usage via the
 `@plugin` decorator.
 
+## CLI commands
+
+Axon exposes several helper commands via `python main.py`:
+
+```bash
+# list available plugins
+python main.py plugins reload
+
+# start a simple text UI
+python main.py tui
+
+# schedule a reminder in 30 seconds
+python main.py remind "take a break" --delay 30
+
+# import profile defaults from a YAML file
+python main.py import-profiles config/user_prefs.yaml
+
+# set or update an individual profile
+python main.py set-profile jon --persona partner --tone informal
+
+# hands‑free voice shell (if optional deps are installed)
+python main.py voice-shell
+```
+
 To store a fact without using the UI, you can run:
 
 ```bash
@@ -68,8 +92,11 @@ Install them via `pip install pyperclip keyboard` if missing.
 - [docs/plugins.md](docs/plugins.md) explains how to create new plugins.
 - [docs/mcp_setup.md](docs/mcp_setup.md) covers running the MCP helper services.
 - [docs/models.md](docs/models.md) shows how to change the default model.
+- [docs/api.md](docs/api.md) lists the REST endpoints.
 
-Example local configuration files are available in `.env.example` and `config/settings.example.yaml`.
+Example configuration files are available in `.env.example`,
+`config/settings.example.yaml`, and the default profiles in
+`config/user_prefs.yaml`.
 
 ## Qwen-Agent
 
