@@ -1,10 +1,11 @@
 """Simple arithmetic calculator server."""
 
-from fastapi import FastAPI, HTTPException
-import math
 import ast
-from typing import Any, Callable, Mapping
+import math
+from collections.abc import Callable, Mapping
+from typing import Any
 
+from fastapi import FastAPI, HTTPException
 
 ALLOWED_FUNCTIONS: Mapping[str, Callable[..., Any]] = {
     name: getattr(math, name) for name in dir(math) if not name.startswith("_")
@@ -48,12 +49,12 @@ def _eval_node(node: ast.AST) -> float:
         args = [_eval_node(arg) for arg in node.args]
         return func(*args)
     if isinstance(node, ast.Constant):
-        if isinstance(node.value, (int, float)):
+        if isinstance(node.value, int | float):
             return float(node.value)
         raise ValueError("non-numeric constant")
     if isinstance(node, ast.Name):
         value = ALLOWED_FUNCTIONS.get(node.id)
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return float(value)
         raise ValueError(f"name {node.id} not allowed")
     raise ValueError("unsupported expression")
