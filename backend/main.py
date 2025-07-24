@@ -1,37 +1,37 @@
 # axon/backend/main.py
 
-from fastapi import (
-    FastAPI,
-    WebSocket,
-    WebSocketDisconnect,
-    Request,
-    Response,
-    HTTPException,
-)
-from starlette.middleware.base import BaseHTTPMiddleware
-from typing import Dict, List
-import redis.asyncio as redis
-from memory.memory_handler import MemoryHandler
-from memory.preload import preload
-from config.settings import settings
-from agent.llm_router import LLMRouter
-from agent.goal_tracker import GoalTracker
-from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
-from agent.mcp_handler import MCPHandler
-from agent.mcp_router import mcp_router
-from agent.pasteback_handler import PastebackHandler
-from agent.session_tracker import SessionTracker
 import io
-import qrcode
+import json
+import logging
+import re
+import time
 from typing import cast
 
-from agent.reminder import MemoryLike, ReminderManager
+import qrcode
+import redis.asyncio as redis
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Request,
+    Response,
+    WebSocket,
+    WebSocketDisconnect,
+)
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from agent.goal_tracker import GoalTracker
+from agent.llm_router import LLMRouter
+from agent.mcp_handler import MCPHandler
+from agent.mcp_router import mcp_router
 from agent.notifier import Notifier
+from agent.pasteback_handler import PastebackHandler
+from agent.plugin_loader import AVAILABLE_PLUGINS, load_plugins
+from agent.reminder import MemoryLike, ReminderManager
+from agent.session_tracker import SessionTracker
+from axon.config.settings import settings
+from memory.memory_handler import MemoryHandler
+from memory.preload import preload
 from memory.user_profile import UserProfileManager
-import json
-import re
-import logging
-import time
 
 # --- NEW: Configure Logging ---
 logging.basicConfig(
@@ -47,11 +47,9 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.limit = limit
         self.token = token
-        self.calls: Dict[str, List[float]] = {}
+        self.calls: dict[str, list[float]] = {}
         self.redis = (
-            redis.from_url(settings.database.redis_url)
-            if settings.database.redis_url
-            else None
+            redis.from_url(settings.database.redis_url) if settings.database.redis_url else None
         )
 
     async def dispatch(self, request: Request, call_next):
@@ -197,9 +195,7 @@ async def session_memory(token: str, tag: str | None = None, domain: str | None 
 
 
 @app.get("/memory/{thread_id}")
-async def list_memory(
-    thread_id: str, tag: str | None = None, domain: str | None = None
-):
+async def list_memory(thread_id: str, tag: str | None = None, domain: str | None = None):
     facts = memory_handler.list_facts(thread_id, tag, domain)
     return {
         "facts": [
@@ -225,9 +221,7 @@ async def add_memory(
     domain: str | None = None,
 ):
     tag_list = [t for t in tags.split(",") if t] if tags else None
-    memory_handler.add_fact(
-        thread_id, key, value, identity, domain=domain, tags=tag_list
-    )
+    memory_handler.add_fact(thread_id, key, value, identity, domain=domain, tags=tag_list)
     return {"status": "ok"}
 
 
@@ -241,9 +235,7 @@ async def update_memory(
     domain: str | None = None,
 ):
     tag_list = [t for t in tags.split(",") if t] if tags else None
-    memory_handler.update_fact(
-        thread_id, key, value, identity, domain=domain, tags=tag_list
-    )
+    memory_handler.update_fact(thread_id, key, value, identity, domain=domain, tags=tag_list)
     return {"status": "ok"}
 
 
@@ -254,9 +246,7 @@ async def delete_memory(thread_id: str, key: str):
 
 
 @app.delete("/memory/{thread_id}")
-async def delete_memory_bulk(
-    thread_id: str, domain: str | None = None, tag: str | None = None
-):
+async def delete_memory_bulk(thread_id: str, domain: str | None = None, tag: str | None = None):
     """Delete multiple facts by thread, optionally filtered."""
     deleted = memory_handler.delete_facts(thread_id, domain=domain, tag=tag)
     return {"deleted": deleted}
@@ -370,9 +360,7 @@ async def websocket_endpoint(
     else:
         session_token, thread_id = session_tracker.create_session(identity)
     await websocket.send_json({"type": "session", "token": session_token})
-    logging.info(
-        f"Client connected to WebSocket for thread_id: {thread_id} as {identity}"
-    )
+    logging.info(f"Client connected to WebSocket for thread_id: {thread_id} as {identity}")
 
     try:
         while True:
@@ -458,9 +446,7 @@ async def websocket_endpoint(
                 )
 
             logging.info(f"Sending response: '{response_message}'")
-            log_traffic(
-                {"direction": "out", "timestamp": time.time(), "data": response_message}
-            )
+            log_traffic({"direction": "out", "timestamp": time.time(), "data": response_message})
             await websocket.send_text(response_message)
 
     except WebSocketDisconnect:

@@ -25,3 +25,4 @@ pip-delete-this-directory.txt
 Thumbs.db
 markdown_notes/
 =1.5
+config/settings.yaml
