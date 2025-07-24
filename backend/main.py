@@ -1,6 +1,13 @@
 # axon/backend/main.py
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Response
+from fastapi import (
+    FastAPI,
+    WebSocket,
+    WebSocketDisconnect,
+    Request,
+    Response,
+    HTTPException,
+)
 from starlette.middleware.base import BaseHTTPMiddleware
 from typing import Dict, List
 from memory.memory_handler import MemoryHandler
@@ -12,6 +19,9 @@ from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
 from agent.mcp_handler import MCPHandler
 from agent.mcp_router import mcp_router
 from agent.pasteback_handler import PastebackHandler
+from agent.session_tracker import SessionTracker
+import io
+import qrcode
 from typing import cast
 
 from agent.reminder import MemoryLike, ReminderManager
@@ -84,6 +94,7 @@ mcp_handler = MCPHandler()
 pasteback_handler = PastebackHandler(memory_handler)
 profile_manager = UserProfileManager(db_uri=settings.database.postgres_uri)
 reminder_manager = ReminderManager(Notifier(), cast(MemoryLike, memory_handler))
+session_tracker = SessionTracker()
 
 
 @app.on_event("startup")
@@ -118,6 +129,46 @@ async def list_mcp_tools():
 async def list_models():
     """Return available local models."""
     return {"models": [settings.llm.default_local_model, "mock-model"]}
+
+
+@app.post("/sessions/login")
+async def login(identity: str, thread_id: str | None = None):
+    """Create a new session for the given identity."""
+    token, tid = session_tracker.create_session(identity, thread_id)
+    return {"token": token, "thread_id": tid, "identity": identity}
+
+
+@app.get("/sessions/qr/{token}")
+async def session_qr(token: str):
+    """Return a QR code image for a session token."""
+    img = qrcode.make(token)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return Response(content=buf.getvalue(), media_type="image/png")
+
+
+@app.get("/sessions/{token}/memory")
+async def session_memory(token: str, tag: str | None = None, domain: str | None = None):
+    """List memory facts for the session associated with the token."""
+    session = session_tracker.resolve(token)
+    if not session:
+        raise HTTPException(status_code=404, detail="invalid token")
+    identity, thread_id = session
+    facts = memory_handler.list_facts(thread_id, tag, domain)
+    return {
+        "identity": identity,
+        "thread_id": thread_id,
+        "facts": [
+            {
+                "key": key,
+                "value": val,
+                "identity": ident,
+                "locked": locked,
+                "tags": tags,
+            }
+            for key, val, ident, locked, tags in facts
+        ],
+    }
 
 
 @app.get("/memory/{thread_id}")
@@ -279,9 +330,21 @@ async def set_profile(
 
 
 @app.websocket("/ws/chat")
-async def websocket_endpoint(websocket: WebSocket, identity: str = "default_user"):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    identity: str = "default_user",
+    session_token: str | None = None,
+):
     await websocket.accept()
-    thread_id = "user_session_123"
+    if session_token:
+        resolved = session_tracker.resolve(session_token)
+        if resolved:
+            identity, thread_id = resolved
+        else:
+            session_token, thread_id = session_tracker.create_session(identity)
+    else:
+        session_token, thread_id = session_tracker.create_session(identity)
+    await websocket.send_json({"type": "session", "token": session_token})
     logging.info(
         f"Client connected to WebSocket for thread_id: {thread_id} as {identity}"
     )
