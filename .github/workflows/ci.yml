@@ -24,8 +24,12 @@ jobs:
           virtualenvs-in-project: true
       - name: Validate lock file
         run: poetry lock --no-update
-      - name: Run verification
-        run: make verify
+      - name: Run checks
+        run: make check
+      - name: pre-commit
+        run: |
+          poetry run pre-commit run --all-files --hook-stage manual --show-diff-on-failure
+          git diff --exit-code
 
   frontend:
     runs-on: ubuntu-latest
