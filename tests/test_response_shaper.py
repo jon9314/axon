@@ -18,6 +18,19 @@ def test_informal_contractions():
     assert "you're" in result
 
 
+def test_formal_expansions():
+    shaper = ResponseShaper()
+    result = shaper.shape("I'm happy you're here", tone="formal")
+    assert "I am" in result
+    assert "you are" in result
+
+
+def test_max_length_truncates():
+    shaper = ResponseShaper(max_length=5)
+    result = shaper.shape("hello world")
+    assert result == "hello"
+
+
 def test_router_profile_styles(monkeypatch):
     monkeypatch.setattr(llm_router, "Assistant", DummyAssistant)
     monkeypatch.setattr(llm_router, "TOOL_REGISTRY", {})

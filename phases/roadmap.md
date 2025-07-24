@@ -101,12 +101,12 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 ## 🚀 Phase 5: Personalization & Pro Mode
 **Goal:** Multi-user and adaptive interaction support
 
-- [ ] Identity tracking across sessions (you vs. family vs. guest)
-- [ ] Model persona shaping based on context (assistant/partner/researcher)
-- [ ] Voice adaptation (tone, formality, role-specific)
-- [ ] Calendar and scheduling integration
-- [ ] Notification system for reminders
-- [ ] Mobile UI or TUI wrapper (optional)
+- [x] Identity tracking across sessions (you vs. family vs. guest)
+- [x] Model persona shaping based on context (assistant/partner/researcher)
+- [x] Voice adaptation (tone, formality, role-specific)
+- [x] Calendar and scheduling integration
+- [x] Notification system for reminders
+- [x] Mobile UI or TUI wrapper (optional)
 
 ---
 
