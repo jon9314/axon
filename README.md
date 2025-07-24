@@ -141,3 +141,4 @@ Phases 0 through 4 are complete, including manual cloud prompting and calendar e
 
 This project is licensed under the [MIT License](LICENSE).
 Third-party package licenses are summarized in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+Run `make licenses` to regenerate this list using **pip-licenses**.

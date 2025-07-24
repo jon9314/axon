@@ -1,16 +1,20 @@
-.PHONY: verify lint format type test frontend install clean help
+.PHONY: verify lint format type test frontend install licenses clean help
 
 # Default target when just running 'make'
 all: verify
 
 # Main verification pipeline - what agents should run
-verify: install lint type test
+verify: install licenses lint type test
 	@echo "✅ All checks passed - ready to commit"
 
 # Individual components
 install:
 	@echo "📦 Installing dependencies..."
 	poetry install --no-interaction --no-root
+
+licenses:
+	@echo "📄 Generating THIRD_PARTY_LICENSES.md..."
+	poetry run python scripts/generate_third_party_licenses.py
 
 lint:
 	@echo "🔍 Linting and formatting..."
@@ -67,6 +71,7 @@ help:
 	@echo "  lint        - Run ruff linter and formatter"
 	@echo "  type        - Run mypy type checker"
 	@echo "  test        - Run pytest suite"
+	@echo "  licenses    - Update THIRD_PARTY_LICENSES.md"
 	@echo "  frontend    - Run frontend linting"
 	@echo "  quick       - Fast iteration: format + first test failure"
 	@echo "  clean       - Remove cache files and node_modules"
