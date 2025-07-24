@@ -5,6 +5,7 @@ from __future__ import annotations
 import platform
 import shutil
 import subprocess
+import logging
 
 try:
     from plyer import notification  # pragma: no cover - optional dep
@@ -30,9 +31,17 @@ class Notifier:
             return ["powershell", "-Command"]
         return None
 
-    def _speak(self, text: str) -> None:
+    def _speak(self, text: str) -> bool:
+        """Attempt to read ``text`` aloud using the detected TTS command.
+
+        Returns ``True`` on success and ``False`` if the speech command fails.
+        Only expected subprocess errors are caught so unexpected issues can
+        surface during development.
+        """
+
         if not self.tts_cmd:
-            return
+            return False
+
         try:
             if self.tts_cmd[0] == "powershell":
                 subprocess.run(
@@ -46,8 +55,10 @@ class Notifier:
                 )
             else:
                 subprocess.run(self.tts_cmd + [text], check=True)
-        except Exception:  # pragma: no cover - best effort
-            pass
+            return True
+        except (subprocess.CalledProcessError, OSError) as exc:
+            logging.warning("Speech synthesis failed: %s", exc)
+            return False
 
     def notify(self, title: str, message: str) -> None:
         text = f"{title}: {message}"
