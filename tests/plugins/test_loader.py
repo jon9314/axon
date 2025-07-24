@@ -42,7 +42,7 @@ PLUGIN_CLASS = TestPlugin
         "permissions": perms or [],
     }
     if schema:
-        manifest["config_schema"] = schema
+        manifest["config_schema"] = schema  # type: ignore[assignment]
     (tmp_path / f"{name}.yaml").write_text(yaml(manifest))
 
 
@@ -76,7 +76,7 @@ def test_plugin_execute_logged(tmp_path: Path, caplog: pytest.LogCaptureFixture)
     loader.discover()
     caplog.set_level(logging.INFO)
     loader.execute("p", {})
-    assert any(r.action == "execute" for r in caplog.records)
+    assert any(r.action == "execute" for r in caplog.records)  # type: ignore[attr-defined]
 
 
 def test_config_schema_validation(tmp_path: Path):

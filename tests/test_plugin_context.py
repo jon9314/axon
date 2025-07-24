@@ -31,6 +31,12 @@ def test_context_helpers():
 def test_demo_plugin(monkeypatch):
     mem = DummyMemory()
     goals = DummyGoals()
+    try:
+        from qwen_agent.tools import TOOL_REGISTRY
+
+        TOOL_REGISTRY.clear()
+    except Exception:
+        pass
     monkeypatch.setattr(context, "memory_handler", mem)
     monkeypatch.setattr(context, "goal_tracker", goals)
     loader = PluginLoader()

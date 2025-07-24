@@ -13,6 +13,12 @@ from agent.mcp_router import MCPRouter
 from agent.reminder import ReminderManager
 from axon.plugins.loader import PluginLoader
 from memory.user_profile import UserProfileManager
+from axon.config.settings import (
+    get_settings,
+    reload_settings,
+    schema_json,
+    validate_or_die,
+)
 
 # Global managers used across commands
 profile_manager = UserProfileManager()
@@ -23,6 +29,30 @@ app = typer.Typer(
     name="axon",
     help="The main entry point for the Axon project, supporting different operational modes.",
 )
+
+
+@app.callback(invoke_without_command=True)
+def main_callback(
+    ctx: typer.Context,
+    config: Optional[str] = typer.Option(
+        None, "--config", help="Path to settings override YAML file"
+    ),
+) -> None:
+    """Global CLI options."""
+    if config:
+        reload_settings(local_file=config)
+    validate_or_die()
+    summary = get_settings().pretty_dump().replace("\n", " ").strip()
+    typer.echo(f"Config loaded: {summary}")
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+
+
+@app.command("settings-schema")
+def settings_schema_cmd() -> None:
+    """Emit JSON schema for the config."""
+    typer.echo(schema_json())
+
 
 plugins_app = typer.Typer(help="Plugin management commands")
 app.add_typer(plugins_app, name="plugins")
@@ -155,8 +185,10 @@ def clipboard_monitor_cmd(seconds: int = 15) -> None:
 @app.command("voice-shell")
 def voice_shell_cmd(timeout: float = 0.0) -> None:
     """Start the hands-free voice shell plugin."""
+    from plugins.voice_shell import voice_shell
+
     t = timeout if timeout > 0 else None
-    plugin_loader.execute("voice_shell", {"timeout": t})
+    voice_shell(timeout=t)
 
 
 @app.command()
