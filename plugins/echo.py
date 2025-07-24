@@ -1,8 +1,11 @@
 # axon/plugins/echo.py
 
-from agent.plugin_loader import plugin
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+from pydantic import BaseModel
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from axon.plugins.base import Plugin
 
 
 @register_tool("echo")
@@ -23,11 +26,22 @@ class EchoTool(BaseTool):
         args = self._verify_json_format_args(params)
         return args["text"]
 
-@plugin(
-    name="echo",
-    description="Echo back the provided text",
-    usage="echo('hello')"
-)
-def echo(text: str) -> str:
-    tool = EchoTool()
-    return tool.call({"text": text})
+
+class EchoPlugin(Plugin):
+    """Simple echo plugin."""
+
+    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - no op
+        return
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "name": self.manifest["name"],
+            "description": self.manifest["description"],
+        }
+
+    def execute(self, data: Any) -> str:
+        tool = EchoTool()
+        return tool.call({"text": data["text"]})
+
+
+PLUGIN_CLASS = EchoPlugin

@@ -1,7 +1,10 @@
-from agent.plugin_loader import plugin
 import time
 from typing import Any
+
+from pydantic import BaseModel
 from qwen_agent.tools.base import BaseTool, register_tool
+
+from axon.plugins.base import Plugin
 
 
 @register_tool("clipboard_monitor")
@@ -35,19 +38,30 @@ class ClipboardMonitor(BaseTool):
             time.sleep(0.5)
         return seen
 
+
 try:
-    import pyperclip
     import keyboard
+    import pyperclip
 except Exception:  # pragma: no cover - optional dependency
     pyperclip = None
     keyboard = None
 
-@plugin(
-    name="clipboard_monitor",
-    description="Watch clipboard for updates for a few seconds",
-    usage="clipboard_monitor(seconds=15)"
-)
-def clipboard_monitor(seconds: int = 15):
-    """Return clipboard changes detected within the given period."""
-    tool = ClipboardMonitor()
-    return tool.call({"seconds": seconds})
+
+class ClipboardMonitorPlugin(Plugin):
+    """Plugin wrapper for clipboard monitoring."""
+
+    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - no op
+        return
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "name": self.manifest["name"],
+            "description": self.manifest["description"],
+        }
+
+    def execute(self, data: Any) -> Any:
+        tool = ClipboardMonitor()
+        return tool.call({"seconds": data.get("seconds", 15)})
+
+
+PLUGIN_CLASS = ClipboardMonitorPlugin

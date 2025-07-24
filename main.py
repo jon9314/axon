@@ -10,13 +10,14 @@ from rich.prompt import Prompt
 
 from agent.context_manager import ContextManager
 from agent.mcp_router import MCPRouter
-from agent.plugin_loader import AVAILABLE_PLUGINS, load_plugins
 from agent.reminder import ReminderManager
+from axon.plugins.loader import PluginLoader
 from memory.user_profile import UserProfileManager
 
 # Global managers used across commands
 profile_manager = UserProfileManager()
 reminder_manager = ReminderManager()
+plugin_loader = PluginLoader()
 
 app = typer.Typer(
     name="axon",
@@ -30,8 +31,8 @@ app.add_typer(plugins_app, name="plugins")
 @plugins_app.command("reload")
 def reload_plugins_cmd() -> None:
     """Reload plugins from disk and display the available set."""
-    load_plugins(hot_reload=True)
-    print(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
+    plugin_loader.discover()
+    print(f"Plugins loaded: {list(plugin_loader.plugins.keys())}")
 
 
 @app.command()
@@ -50,8 +51,8 @@ def cli():
     """
     # --- NEW: Load plugins on CLI startup ---
     print("Loading plugins...")
-    load_plugins(hot_reload=True)
-    print(f"Plugins loaded: {list(AVAILABLE_PLUGINS.keys())}")
+    plugin_loader.discover()
+    print(f"Plugins loaded: {list(plugin_loader.plugins.keys())}")
     # --- END NEW ---
 
     print("\nStarting CLI mode...")
@@ -64,9 +65,8 @@ def cli():
                 break
 
             # --- NEW: Check for and execute plugins ---
-            if user_input in AVAILABLE_PLUGINS:
-                plugin_info = AVAILABLE_PLUGINS[user_input]
-                result = plugin_info.func()
+            if user_input in plugin_loader.plugins:
+                result = plugin_loader.execute(user_input, {})
                 print(f"Plugin '{user_input}': {result}")
             else:
                 # Placeholder for your agent's regular processing logic
@@ -82,7 +82,7 @@ def tui() -> None:
     """Simple text-based UI using Rich."""
     console = Console()
     console.print("[bold magenta]Axon TUI mode. Type 'quit' to exit.[/bold magenta]")
-    load_plugins(hot_reload=True)
+    plugin_loader.discover()
     while True:
         try:
             user_input = Prompt.ask("[cyan]You[/cyan]")
@@ -90,9 +90,8 @@ def tui() -> None:
             break
         if user_input.lower() in {"quit", "exit"}:
             break
-        if user_input in AVAILABLE_PLUGINS:
-            plugin_info = AVAILABLE_PLUGINS[user_input]
-            result = plugin_info.func()
+        if user_input in plugin_loader.plugins:
+            result = plugin_loader.execute(user_input, {})
             console.print(f"[green]Plugin {user_input}:[/green] {result}")
         else:
             console.print(f"[yellow]Agent[/yellow]: I would process '{user_input}' now.")
@@ -149,19 +148,15 @@ def remind(message: str, delay: int = 60, thread_id: str = "cli_thread") -> None
 @app.command("clipboard-monitor")
 def clipboard_monitor_cmd(seconds: int = 15) -> None:
     """Run the clipboard monitor plugin."""
-    from plugins.clipboard_monitor import clipboard_monitor
-
-    result = clipboard_monitor(seconds)
+    result = plugin_loader.execute("clipboard_monitor", {"seconds": seconds})
     print(result)
 
 
 @app.command("voice-shell")
 def voice_shell_cmd(timeout: float = 0.0) -> None:
     """Start the hands-free voice shell plugin."""
-    from plugins.voice_shell import voice_shell
-
     t = timeout if timeout > 0 else None
-    voice_shell(timeout=t)
+    plugin_loader.execute("voice_shell", {"timeout": t})
 
 
 @app.command()

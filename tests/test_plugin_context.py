@@ -1,5 +1,5 @@
 from agent.plugin_context import PluginContext, context
-from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
+from axon.plugins.loader import PluginLoader
 
 
 class DummyMemory:
@@ -21,9 +21,7 @@ class DummyGoals:
 def test_context_helpers():
     mem = DummyMemory()
     goals = DummyGoals()
-    ctx = PluginContext(
-        memory_handler=mem, goal_tracker=goals, thread_id="t1", identity="bob"
-    )
+    ctx = PluginContext(memory_handler=mem, goal_tracker=goals, thread_id="t1", identity="bob")
     ctx.add_fact("k", "v")
     ctx.add_goal("do it", priority=2)
     assert mem.add_calls == [("t1", "k", "v", "bob")]
@@ -35,9 +33,9 @@ def test_demo_plugin(monkeypatch):
     goals = DummyGoals()
     monkeypatch.setattr(context, "memory_handler", mem)
     monkeypatch.setattr(context, "goal_tracker", goals)
-    load_plugins(hot_reload=True)
-    func = AVAILABLE_PLUGINS["remember_goal"].func
-    result = func(key="topic", value="fact", goal="goal text")
+    loader = PluginLoader()
+    loader.discover()
+    result = loader.execute("remember_goal", {"key": "topic", "value": "fact", "goal": "goal text"})
     assert result == "ok"
     assert mem.add_calls
     assert goals.calls
