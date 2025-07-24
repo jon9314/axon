@@ -1,0 +1,4 @@
+name: get_os_version
+version: "1.0"
+description: Return the host operating system version
+permissions: []

@@ -1,0 +1,5 @@
+name: voice_shell
+version: "1.0"
+description: Start a hands-free voice shell
+permissions:
+  - process.spawn

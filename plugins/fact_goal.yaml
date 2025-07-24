@@ -1,0 +1,4 @@
+name: remember_goal
+version: "1.0"
+description: Store a fact and log a goal
+permissions: []

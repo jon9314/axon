@@ -1,7 +1,10 @@
-from agent.plugin_loader import plugin
-from agent.plugin_context import context
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+from pydantic import BaseModel
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from agent.plugin_context import context
+from axon.plugins.base import Plugin
 
 
 @register_tool("remember_goal")
@@ -37,12 +40,27 @@ class RememberGoal(BaseTool):
         return "ok"
 
 
-@plugin(
-    name="remember_goal",
-    description="Store a fact and log a goal",
-    usage="remember_goal(key='topic', value='info', goal='Finish project')",
-)
-def remember_goal(key: str, value: str, goal: str) -> str:
+class RememberGoalPlugin(Plugin):
     """Demo plugin that saves a fact then records a goal."""
-    tool = RememberGoal()
-    return tool.call({"key": key, "value": value, "goal": goal})
+
+    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - no op
+        return
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "name": self.manifest["name"],
+            "description": self.manifest["description"],
+        }
+
+    def execute(self, data: Any) -> str:
+        tool = RememberGoal()
+        return tool.call(
+            {
+                "key": data["key"],
+                "value": data["value"],
+                "goal": data["goal"],
+            }
+        )
+
+
+PLUGIN_CLASS = RememberGoalPlugin

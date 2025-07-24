@@ -1,9 +1,12 @@
 # axon/plugins/system_info.py
 
 import platform
-from agent.plugin_loader import plugin
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+from pydantic import BaseModel
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from axon.plugins.base import Plugin
 
 
 @register_tool("get_os_version")
@@ -18,13 +21,22 @@ class GetOSVersion(BaseTool):
         self._verify_json_format_args(params)
         return f"The current OS is: {platform.system()} {platform.release()}"
 
-@plugin(
-    name="get_os_version",
-    description="Return the host operating system version",
-    usage="get_os_version()"
-)
-def get_os_version():
-    """Return the current OS version."""
-    tool = GetOSVersion()
-    return tool.call({})
 
+class SystemInfoPlugin(Plugin):
+    """Plugin returning OS information."""
+
+    def load(self, config: BaseModel | None) -> None:  # pragma: no cover - no op
+        return
+
+    def describe(self) -> dict[str, Any]:
+        return {
+            "name": self.manifest["name"],
+            "description": self.manifest["description"],
+        }
+
+    def execute(self, data: Any) -> str:
+        tool = GetOSVersion()
+        return tool.call({})
+
+
+PLUGIN_CLASS = SystemInfoPlugin
