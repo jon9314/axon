@@ -157,11 +157,12 @@ def clipboard_monitor_cmd(seconds: int = 15) -> None:
 
 
 @app.command("voice-shell")
-def voice_shell_cmd() -> None:
+def voice_shell_cmd(timeout: float = 0.0) -> None:
     """Start the hands-free voice shell plugin."""
     from plugins.voice_shell import voice_shell
 
-    voice_shell()
+    t = timeout if timeout > 0 else None
+    voice_shell(timeout=t)
 
 
 @app.command()
