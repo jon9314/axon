@@ -35,6 +35,16 @@ pre-commit install
 The configured hooks execute `ruff`, `black`, `mypy`, `pytest`, `eslint` and
 `tsc` so issues are caught early.
 
+### Commit message contract
+
+Commit messages must end with an `AI-Change-Summary` block listing the files
+touched, tests run, and rationale. Install the provided `git-hooks/commit-msg`
+script so Git enforces this:
+
+```bash
+git config core.hooksPath git-hooks
+```
+
 ## CLI commands
 
 Axon exposes several helper commands via `python main.py`:

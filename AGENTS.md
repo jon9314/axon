@@ -9,7 +9,9 @@ Your only job: **make it work, prove it works, and explain your reasoning.**
 
 1. Create a branch: `git checkout -b agent/fix-description`
 2. Run preflight: `make verify` or `scripts/preflight.sh`
-3. Fix what fails, commit with <72 char summary
+3. Fix what fails, commit with <72 char summary and include an
+   `AI-Change-Summary` block detailing files touched, tests run, and the
+   rationale for the change
 4. Open PR using template (§6), include reasoning and command outputs
 5. **Never merge if any check fails**
 
@@ -157,6 +159,17 @@ refactor
 ```
 
 **One logical change per commit.** If you fix formatting + logic, make 2 commits.
+
+Every commit must end with an `AI-Change-Summary:` block:
+
+```markdown
+AI-Change-Summary:
+- Files touched: list of files
+- Tests run: command or skipped reason
+- Rationale: short justification
+```
+
+The included `git-hooks/commit-msg` script enforces this format.
 
 ---
 

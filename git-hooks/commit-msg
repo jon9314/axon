@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Enforce AI commit message summary block
+
+set -euo pipefail
+
+msg_file="$1"
+
+if ! grep -q '^AI-Change-Summary:' "$msg_file"; then
+    echo "Error: Commit message must include an AI-Change-Summary block" >&2
+    echo "Example:\n\nAI-Change-Summary:\n- Files touched: foo.py\n- Tests run: make verify\n- Rationale: fix bug" >&2
+    exit 1
+fi
+
+block=$(sed -n '/^AI-Change-Summary:/,/^$/p' "$msg_file" | tail -n +2)
+bullet_count=$(echo "$block" | grep -c '^-' || true)
+if [ "$bullet_count" -lt 3 ]; then
+    echo "Error: AI-Change-Summary block must list files touched, tests run, and rationale" >&2
+    exit 1
+fi
+
+exit 0
