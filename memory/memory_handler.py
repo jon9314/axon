@@ -1,5 +1,6 @@
 # axon/memory/memory_handler.py
 
+import logging
 import psycopg2
 from psycopg2 import sql
 from typing import Optional, Iterable
@@ -19,11 +20,11 @@ class MemoryHandler:
         try:
             self.conn = psycopg2.connect(db_uri)
             self._ensure_table_and_columns_exist()
-            print(
+            logging.info(
                 "Successfully connected to PostgreSQL and ensured 'facts' table is correctly structured."
             )
-        except psycopg2.OperationalError as e:
-            print(f"Error connecting to PostgreSQL: {e}")
+        except psycopg2.OperationalError as exc:
+            logging.exception("Error connecting to PostgreSQL: %s", exc)
             self.conn = None
 
     def _ensure_table_and_columns_exist(self):
@@ -83,7 +84,7 @@ class MemoryHandler:
         Adds or updates a fact for a given thread and identity.
         """
         if not self.conn:
-            print("No database connection.")
+            logging.error("No database connection.")
             return
 
         tags = list(tags) if tags else []
@@ -97,15 +98,19 @@ class MemoryHandler:
             )
             cur.execute(query, (thread_id, key, value, identity, tags_str, domain))
             self.conn.commit()
-            print(
-                f"Added/Updated fact for thread {thread_id}: {key} = {value} "
-                f"(Identity: {identity}, Tags: {tags})"
+            logging.info(
+                "Added/Updated fact for thread %s: %s = %s (Identity: %s, Tags: %s)",
+                thread_id,
+                key,
+                value,
+                identity,
+                tags,
             )
 
     def get_fact(self, thread_id: str, key: str, include_identity: bool = False):
         """Retrieve a fact and optionally its identity for a given thread."""
         if not self.conn:
-            print("No database connection.")
+            logging.error("No database connection.")
             return None
 
         with self.conn.cursor() as cur:
@@ -114,8 +119,11 @@ class MemoryHandler:
             )
             cur.execute(query, (thread_id, key))
             result = cur.fetchone()
-            print(
-                f"Retrieved fact for thread {thread_id} with key {key}: {'Found' if result else 'Not Found'}"
+            logging.info(
+                "Retrieved fact for thread %s with key %s: %s",
+                thread_id,
+                key,
+                "Found" if result else "Not Found",
             )
             if not result:
                 return None
@@ -130,7 +138,7 @@ class MemoryHandler:
         If ``tag`` is provided, only facts containing that tag are returned.
         """
         if not self.conn:
-            print("No database connection.")
+            logging.error("No database connection.")
             return []
 
         with self.conn.cursor() as cur:
@@ -220,4 +228,4 @@ class MemoryHandler:
         """
         if self.conn:
             self.conn.close()
-            print("PostgreSQL connection closed.")
+            logging.info("PostgreSQL connection closed.")
