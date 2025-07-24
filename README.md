@@ -112,3 +112,8 @@ reasoning enabled and how to pass the recommended `generate_cfg` settings.
 
 Phases 0 through 4 are complete, including manual cloud prompting and calendar export features. See [phases/roadmap.md](phases/roadmap.md) for the latest status of each phase.
 
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+Third-party package licenses are summarized in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
