@@ -21,6 +21,20 @@ Run `python main.py cli` to load plugins (hot reloaded each launch). Each
 plugin provides metadata such as name, description, and usage via the
 `@plugin` decorator.
 
+## Pre-commit hooks
+
+To run linting and tests automatically before every commit, install the
+[pre-commit](https://pre-commit.com) hooks after setting up the development
+environment:
+
+```bash
+poetry install --with dev
+pre-commit install
+```
+
+The configured hooks execute `ruff`, `black`, `mypy`, `pytest`, `eslint` and
+`tsc` so issues are caught early.
+
 ## CLI commands
 
 Axon exposes several helper commands via `python main.py`:
