@@ -2,12 +2,15 @@
 
 """Simple goal tracking backed by PostgreSQL."""
 
-import psycopg2
-import threading
-from typing import Optional
-from datetime import datetime
 import re
-from config.settings import settings
+import threading
+from datetime import datetime
+from typing import Optional
+
+import psycopg2
+
+from axon.config.settings import settings
+
 from .notifier import Notifier
 
 
@@ -170,9 +173,7 @@ class GoalTracker:
             self.notifier.notify("Deferred goals", summary)
         self.start_deferred_prompting(thread_id, interval)
 
-    def start_deferred_prompting(
-        self, thread_id: str, interval_seconds: float = 3600
-    ) -> None:
+    def start_deferred_prompting(self, thread_id: str, interval_seconds: float = 3600) -> None:
         """Begin periodic reminders for deferred goals."""
         if self._prompt_timer:
             self._prompt_timer.cancel()

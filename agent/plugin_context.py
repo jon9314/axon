@@ -1,10 +1,11 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Optional, Iterable
 from datetime import datetime
+from typing import Optional
 
-from memory.memory_handler import MemoryHandler
 from agent.goal_tracker import GoalTracker
-from config.settings import settings
+from axon.config.settings import settings
+from memory.memory_handler import MemoryHandler
 
 
 @dataclass

@@ -1,11 +1,12 @@
 # axon/agent/context_manager.py
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import List, Optional, Iterable
+from typing import Optional
 
-from memory.memory_handler import MemoryHandler
 from agent.goal_tracker import GoalTracker
-from config.settings import settings
+from axon.config.settings import settings
+from memory.memory_handler import MemoryHandler
 
 
 @dataclass
@@ -26,10 +27,8 @@ class ContextManager:
         self.thread_id = thread_id
         self.identity = identity
         self.memory_handler = MemoryHandler(db_uri=settings.database.postgres_uri)
-        self.goal_tracker = goal_tracker or GoalTracker(
-            db_uri=settings.database.postgres_uri
-        )
-        self.chat_history: List[ChatMessage] = []
+        self.goal_tracker = goal_tracker or GoalTracker(db_uri=settings.database.postgres_uri)
+        self.chat_history: list[ChatMessage] = []
 
     def add_fact(
         self,
@@ -98,6 +97,4 @@ class ContextManager:
         speaker = identity or self.identity
         self.chat_history.append(ChatMessage(identity=speaker, text=text))
         if self.goal_tracker:
-            self.goal_tracker.detect_and_add_goal(
-                self.thread_id, text, identity=speaker
-            )
+            self.goal_tracker.detect_and_add_goal(self.thread_id, text, identity=speaker)

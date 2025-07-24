@@ -1,8 +1,10 @@
-from typing import Optional
 import os
-import yaml
+from typing import Optional
+
 import psycopg2
-from config.settings import settings
+import yaml
+
+from axon.config.settings import settings
 
 
 class UserProfileManager:
@@ -84,7 +86,7 @@ class UserProfileManager:
         if not self.conn or not os.path.exists(path):
             return
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 data = yaml.safe_load(f) or {}
         except Exception:
             return

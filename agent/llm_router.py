@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Dict, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from qwen_agent.agents import Assistant
 from qwen_agent.tools import TOOL_REGISTRY
-from config.settings import settings
+
+from axon.config.settings import settings
 
 from .fallback_prompt import generate_prompt, to_json
 from .response_shaper import ResponseShaper
@@ -39,7 +41,7 @@ class LLMRouter:
             return True
         return len(prompt) > 400
 
-    def _extract_text(self, response: Iterable[Dict[str, Any]] | Iterable[Any]) -> str:
+    def _extract_text(self, response: Iterable[dict[str, Any]] | Iterable[Any]) -> str:
         """Return the last assistant message text."""
         messages = list(response)
         if not messages:
@@ -55,14 +57,14 @@ class LLMRouter:
         model: str,
         persona: str | None = None,
         tone: str | None = None,
-        history: List[Dict[str, str]] | None = None,
+        history: list[dict[str, str]] | None = None,
     ) -> str:
         """Return the assistant reply or fallback suggestion."""
         if self._needs_cloud(prompt):
             fallback = generate_prompt(prompt)
             return to_json(fallback)
 
-        messages: List[Dict[str, str]] = history[:] if history else []
+        messages: list[dict[str, str]] = history[:] if history else []
         if persona or tone:
             styles = []
             if persona:
