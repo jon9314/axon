@@ -110,6 +110,9 @@ main() {
     
     # Install dependencies
     run_check "Installing Python dependencies" "poetry install --no-interaction --no-root"
+
+    # Generate third-party license summary
+    run_check "Updating THIRD_PARTY_LICENSES.md" "poetry run python scripts/generate_third_party_licenses.py"
     
     # Linting and formatting
     run_check "Running ruff linter" "poetry run ruff check . --fix"
