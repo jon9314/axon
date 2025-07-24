@@ -1,20 +1,27 @@
-# axon/config/settings.py
+"""Central configuration loaded from env, YAML and defaults."""
 
-from pydantic import BaseModel, ValidationError
-import yaml
+from __future__ import annotations
+
+from typing import Any
+
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict, sources
 
 
-# Use Pydantic's BaseModel for structured data
 class DatabaseSettings(BaseModel):
-    postgres_uri: str
-    qdrant_host: str
-    qdrant_port: int
+    """Database and vector store connection options."""
+
+    postgres_uri: str = "postgresql://user:password@localhost:5432/axon_db"
+    qdrant_host: str = "localhost"
+    qdrant_port: int = 6333
     redis_url: str = "redis://localhost:6379/0"
 
 
 class LlmSettings(BaseModel):
-    default_local_model: str
-    qwen_agent_generate_cfg: dict | None = None
+    """LLM configuration."""
+
+    default_local_model: str = "qwen3:8b"
+    qwen_agent_generate_cfg: dict[str, Any] | None = None
 
 
 class AppConfig(BaseModel):
@@ -27,30 +34,37 @@ class AppConfig(BaseModel):
     proactive_scan_minutes: int = 30
 
 
-class AppSettings(BaseModel):
-    database: DatabaseSettings
-    llm: LlmSettings
-    app: AppConfig = AppConfig()
+class Settings(BaseSettings):
+    """Load configuration from environment, YAML, then defaults."""
+
+    database: DatabaseSettings = DatabaseSettings()  # type: ignore[misc]
+    llm: LlmSettings = LlmSettings()  # type: ignore[misc]
+    app: AppConfig = AppConfig()  # type: ignore[misc]
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_nested_delimiter="__",
+        yaml_file="config/settings.yaml",
+    )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: sources.PydanticBaseSettingsSource,
+        env_settings: sources.PydanticBaseSettingsSource,
+        dotenv_settings: sources.PydanticBaseSettingsSource,
+        file_secret_settings: sources.PydanticBaseSettingsSource,
+    ) -> tuple[sources.PydanticBaseSettingsSource, ...]:
+        yaml_source = sources.YamlConfigSettingsSource(settings_cls)
+        return (
+            env_settings,
+            dotenv_settings,
+            yaml_source,
+            init_settings,
+            file_secret_settings,
+        )
 
 
-def load_settings() -> AppSettings:
-    """Loads settings from the YAML file and validates them."""
-    try:
-        with open("config/settings.yaml", "r") as f:
-            config_data = yaml.safe_load(f)
-
-        # Validate the loaded data against our Pydantic models
-        return AppSettings(**config_data)
-    except FileNotFoundError:
-        print("ERROR: config/settings.yaml not found.")
-        raise
-    except ValidationError as e:
-        print(f"ERROR: Configuration validation failed: {e}")
-        raise
-    except Exception as e:
-        print(f"An unexpected error occurred while loading settings: {e}")
-        raise
-
-
-# Create a single instance that will be imported by other parts of the app
-settings = load_settings()
+# Singleton instance imported elsewhere
+settings = Settings()
