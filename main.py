@@ -1,17 +1,18 @@
 # axon/main.py
 
+import asyncio
 from typing import Optional
 
 import typer
 import uvicorn
-import asyncio
-from agent.plugin_loader import load_plugins, AVAILABLE_PLUGINS
-from agent.mcp_router import MCPRouter
-from memory.user_profile import UserProfileManager
-from agent.reminder import ReminderManager
-from agent.context_manager import ContextManager
 from rich.console import Console
 from rich.prompt import Prompt
+
+from agent.context_manager import ContextManager
+from agent.mcp_router import MCPRouter
+from agent.plugin_loader import AVAILABLE_PLUGINS, load_plugins
+from agent.reminder import ReminderManager
+from memory.user_profile import UserProfileManager
 
 # Global managers used across commands
 profile_manager = UserProfileManager()
@@ -94,9 +95,7 @@ def tui() -> None:
             result = plugin_info.func()
             console.print(f"[green]Plugin {user_input}:[/green] {result}")
         else:
-            console.print(
-                f"[yellow]Agent[/yellow]: I would process '{user_input}' now."
-            )
+            console.print(f"[yellow]Agent[/yellow]: I would process '{user_input}' now.")
 
 
 @app.command()
