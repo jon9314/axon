@@ -22,7 +22,7 @@ try:  # pragma: no cover - optional deps
 except Exception:  # pragma: no cover - optional deps
     whisper = None  # type: ignore
 
-__all__ = ["VoiceShellPlugin"]
+__all__ = ["VoiceShellPlugin", "voice_shell"]
 
 
 def _say(text: str) -> None:
@@ -67,3 +67,11 @@ class VoiceShellPlugin(Plugin):
 
 
 PLUGIN_CLASS = VoiceShellPlugin
+
+
+def voice_shell(
+    *, timeout: float | None = None, model_path: str | None = None, wakeword: str = "axon"
+) -> None:
+    """Entry point used by CLI tests."""
+    plugin = VoiceShellPlugin({"name": "voice_shell", "description": "voice shell"})
+    plugin.execute({"timeout": timeout, "model_path": model_path, "wakeword": wakeword})
