@@ -1,4 +1,4 @@
-# Guidelines for Automated Contributors (agents.md)
+# Guidelines for Automated Contributors
 
 Automated agents (and forgetful humans) can modify **any** file in this repo.  
 Your only job: **make it work, prove it works, and explain your reasoning.**
