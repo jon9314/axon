@@ -38,16 +38,18 @@ class VectorStore:
             print("No Qdrant client connection.")
             return
 
-        # Ensure the collection exists before adding data.
-        # This operation is idempotent, so it's safe to call every time.
-        self.client.recreate_collection(
-            collection_name=collection_name,
-            vectors_config=models.VectorParams(
-                size=len(vector),
-                distance=models.Distance.COSINE,
-            ),
-            on_disk_payload=True,
-        )
+        # Create the collection on first insert without wiping existing data.
+        try:
+            self.client.get_collection(collection_name)
+        except Exception:
+            self.client.create_collection(
+                collection_name=collection_name,
+                vectors_config=models.VectorParams(
+                    size=len(vector),
+                    distance=models.Distance.COSINE,
+                ),
+                on_disk_payload=True,
+            )
 
         # Ensure there is an index on the identity payload field for filtering
         try:
