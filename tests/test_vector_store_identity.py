@@ -1,6 +1,8 @@
 from types import SimpleNamespace
-from memory.vector_store import VectorStore
+
 from qdrant_client.http import models
+
+from memory.vector_store import VectorStore
 
 
 class DummyQdrantClient:
@@ -16,9 +18,7 @@ class DummyQdrantClient:
             raise ValueError("Collection not found")
         return self.collections[collection_name]
 
-    def recreate_collection(
-        self, collection_name, vectors_config, on_disk_payload=True
-    ):
+    def recreate_collection(self, collection_name, vectors_config, on_disk_payload=True):
         # Compatibility shim for older tests
         self.collections[collection_name] = []
 
@@ -34,9 +34,7 @@ class DummyQdrantClient:
     def upsert(self, collection_name, points, wait=True):
         self.collections.setdefault(collection_name, []).extend(points)
 
-    def search(
-        self, collection_name, query_vector, limit=5, query_filter=None, **kwargs
-    ):
+    def search(self, collection_name, query_vector, limit=5, query_filter=None, **kwargs):
         points = self.collections.get(collection_name, [])
         results = []
         for p in points:

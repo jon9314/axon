@@ -1,6 +1,8 @@
-from fastapi.testclient import TestClient
-from mcp_servers.github_server import app
 import subprocess
+
+from fastapi.testclient import TestClient
+
+from mcp_servers.github_server import app
 
 client = TestClient(app)
 
@@ -41,12 +43,15 @@ def test_write(tmp_path):
     )
     assert resp.status_code == 200
     assert (repo / "notes.txt").read_text() == "data"
-    log = subprocess.check_output([
-        "git",
-        "-C",
-        str(repo),
-        "log",
-        "-1",
-        "--pretty=%s",
-    ], text=True).strip()
+    log = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "log",
+            "-1",
+            "--pretty=%s",
+        ],
+        text=True,
+    ).strip()
     assert log == "add"

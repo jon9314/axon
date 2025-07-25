@@ -1,10 +1,11 @@
+from datetime import datetime
+
 from fastapi import FastAPI
-from datetime import datetime, timezone
 
 try:  # Python 3.11+
     from datetime import UTC  # type: ignore[attr-defined]
 except ImportError:  # pragma: no cover - for Python <3.11
-    UTC = timezone.utc
+    UTC = UTC
 import time
 
 app = FastAPI()

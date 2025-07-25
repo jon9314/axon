@@ -26,7 +26,7 @@ class ContextManager:
     ) -> None:
         self.thread_id = thread_id
         self.identity = identity
-        self.memory_handler = MemoryHandler(db_uri=settings.database.postgres_uri)
+        self.memory_handler = MemoryHandler()
         self.goal_tracker = goal_tracker or GoalTracker(db_uri=settings.database.postgres_uri)
         self.chat_history: list[ChatMessage] = []
 

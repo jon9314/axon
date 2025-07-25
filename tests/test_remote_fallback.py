@@ -1,6 +1,7 @@
+import json
+
 from agent.fallback_prompt import suggest_model
 from agent.llm_router import LLMRouter
-import json
 
 
 def test_suggest_model():
@@ -30,4 +31,3 @@ def test_llm_router_keyword_triggers_fallback():
     result = router.get_response("Please analyze this", model="local")
     data = json.loads(result)
     assert data["model"] == "gpt-4o"
-

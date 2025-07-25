@@ -1,6 +1,6 @@
-from agent.response_shaper import ResponseShaper
 import agent.llm_router as llm_router
 from agent.llm_router import LLMRouter
+from agent.response_shaper import ResponseShaper
 
 
 class DummyAssistant:
@@ -35,12 +35,8 @@ def test_router_profile_styles(monkeypatch):
     monkeypatch.setattr(llm_router, "Assistant", DummyAssistant)
     monkeypatch.setattr(llm_router, "TOOL_REGISTRY", {})
     router = LLMRouter()
-    neutral = router.get_response(
-        "hi", model="local", persona="assistant", tone="neutral"
-    )
-    informal = router.get_response(
-        "hi", model="local", persona="partner", tone="informal"
-    )
+    neutral = router.get_response("hi", model="local", persona="assistant", tone="neutral")
+    informal = router.get_response("hi", model="local", persona="partner", tone="informal")
     assert neutral != informal
     assert informal.startswith("Hey there,")
     assert "I'm" in informal

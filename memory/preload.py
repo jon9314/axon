@@ -3,15 +3,15 @@
 """Load sample memory entries on startup."""
 
 import json
+
 import yaml
+
 from .memory_handler import MemoryHandler
 
 
-def preload(
-    memory_handler: MemoryHandler, path: str = "data/initial_memory.yaml"
-) -> None:
+def preload(memory_handler: MemoryHandler, path: str = "data/initial_memory.yaml") -> None:
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             data = yaml.safe_load(f)
     except FileNotFoundError:
         print("No preload file found.")
@@ -27,6 +27,4 @@ def preload(
         )
 
     for i, message in enumerate(data.get("mcp_messages", []), start=1):
-        memory_handler.add_fact(
-            thread_id="mcp", key=f"mcp_message_{i}", value=json.dumps(message)
-        )
+        memory_handler.add_fact(thread_id="mcp", key=f"mcp_message_{i}", value=json.dumps(message))

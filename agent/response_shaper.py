@@ -46,9 +46,7 @@ class ResponseShaper:
             text = re.sub(pat, repl, text, flags=re.IGNORECASE)
         return text
 
-    def shape(
-        self, text: str, persona: str | None = None, tone: str | None = None
-    ) -> str:
+    def shape(self, text: str, persona: str | None = None, tone: str | None = None) -> str:
         """Return the text adjusted for persona and tone."""
         shaped = text
 

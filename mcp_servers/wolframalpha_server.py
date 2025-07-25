@@ -1,8 +1,10 @@
-from fastapi import FastAPI, HTTPException
 import os
+
 import requests
+from fastapi import FastAPI, HTTPException
 
 app = FastAPI()
+
 
 @app.get("/query")
 def query(expression: str):

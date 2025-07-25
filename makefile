@@ -19,6 +19,7 @@ check: install
 	poetry run pip install types-pyyaml || true
 	poetry run mypy . --show-error-codes
 	poetry run pytest -q --tb=short
+	poetry run pytest -q tests/memory
 	poetry run python tools/ensure_small_diff.py
 
 fix: install licenses

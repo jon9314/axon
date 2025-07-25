@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import threading
 import json
+import threading
 import time
-from typing import Protocol, Iterable, Any
+from collections.abc import Iterable
+from typing import Any, Protocol
 
 from .notifier import Notifier
 
@@ -40,17 +41,13 @@ class ReminderManager:
         if self.memory_handler:
             self.memory_handler.delete_fact(thread_id, key)
 
-    def schedule(
-        self, message: str, delay_seconds: int, thread_id: str = "default_thread"
-    ) -> str:
+    def schedule(self, message: str, delay_seconds: int, thread_id: str = "default_thread") -> str:
         ts = int(time.time()) + delay_seconds
         key = f"reminder_{ts}"
         if self.memory_handler:
             data = json.dumps({"message": message, "time": ts})
             self.memory_handler.add_fact(thread_id, key, data, identity="reminder")
-        timer = threading.Timer(
-            delay_seconds, self._trigger, args=(thread_id, key, message)
-        )
+        timer = threading.Timer(delay_seconds, self._trigger, args=(thread_id, key, message))
         timer.daemon = True
         timer.start()
         self._timers.append(timer)
@@ -60,9 +57,7 @@ class ReminderManager:
         if not self.memory_handler:
             return []
         results: list[dict[str, Any]] = []
-        for key, value, _ident, _locked, _tags in self.memory_handler.list_facts(
-            thread_id
-        ):
+        for key, value, _ident, _locked, _tags in self.memory_handler.list_facts(thread_id):
             if key.startswith("reminder_"):
                 try:
                     data = json.loads(value)

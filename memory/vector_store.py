@@ -1,9 +1,9 @@
 # axon/memory/vector_store.py
 
+import uuid
 from typing import Optional
 
 from qdrant_client import QdrantClient, models
-import uuid
 
 
 class VectorStore:

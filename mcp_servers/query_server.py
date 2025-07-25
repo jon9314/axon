@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Body, HTTPException
 import csv
-import sqlite3
 import io
 import os
+import sqlite3
+
+from fastapi import Body, FastAPI, HTTPException
 
 app = FastAPI()
 
@@ -10,7 +11,7 @@ app = FastAPI()
 def run_query(csv_path: str, sql: str):
     if not os.path.exists(csv_path):
         raise HTTPException(status_code=404, detail="csv not found")
-    with open(csv_path, "r", encoding="utf-8") as f:
+    with open(csv_path, encoding="utf-8") as f:
         content = f.read()
     conn = sqlite3.connect(":memory:")
     cur = conn.cursor()
@@ -19,9 +20,7 @@ def run_query(csv_path: str, sql: str):
         headers = next(reader)
     except StopIteration:
         return []
-    cur.execute(
-        "CREATE TABLE data (" + ", ".join(f'{h} TEXT' for h in headers) + ")"
-    )
+    cur.execute("CREATE TABLE data (" + ", ".join(f"{h} TEXT" for h in headers) + ")")
     cur.executemany(
         "INSERT INTO data VALUES (" + ",".join("?" for _ in headers) + ")",
         list(reader),

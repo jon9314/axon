@@ -1,8 +1,10 @@
 import os
-import requests
-from agent.plugin_loader import plugin
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+import requests
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from agent.plugin_loader import plugin
 
 BASE_URL = os.environ.get("GITHUB_MCP_URL", "http://localhost:9005")
 

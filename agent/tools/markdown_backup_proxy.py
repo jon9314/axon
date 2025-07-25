@@ -1,8 +1,10 @@
 import os
-import requests
-from agent.plugin_loader import plugin
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+import requests
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from agent.plugin_loader import plugin
 
 BASE_URL = os.environ.get("MARKDOWN_MCP_URL", "http://localhost:9004")
 
@@ -58,10 +60,11 @@ class MarkdownBackupProxy(BaseTool):
         resp.raise_for_status()
         return resp.json()
 
+
 @plugin(
     name="markdown_backup",
     description="Save and retrieve markdown notes via MCP",
-    usage="markdown_backup(command='save', name='note', content='text')"
+    usage="markdown_backup(command='save', name='note', content='text')",
 )
 def markdown_backup(command: str, **kwargs):
     tool = MarkdownBackupProxy()

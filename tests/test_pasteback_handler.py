@@ -1,6 +1,7 @@
-from agent.pasteback_handler import PastebackHandler
-from agent.llm_router import LLMRouter
 import json
+
+from agent.llm_router import LLMRouter
+from agent.pasteback_handler import PastebackHandler
 
 
 class DummyMemory:
@@ -31,10 +32,6 @@ def test_full_copy_paste_cycle():
     mem = DummyMemory()
     handler = PastebackHandler(mem)
     router = LLMRouter()
-    prompt_json = json.loads(
-        router.get_response("Please summarize these notes", model="local")
-    )
-    handler.store(
-        "t2", prompt_json["prompt"], "result text", model=prompt_json["model"]
-    )
+    prompt_json = json.loads(router.get_response("Please summarize these notes", model="local"))
+    handler.store("t2", prompt_json["prompt"], "result text", model=prompt_json["model"])
     assert len(mem.calls) == 2

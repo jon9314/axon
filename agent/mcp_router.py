@@ -1,23 +1,24 @@
-import os
 import json
-import yaml
-import subprocess
-import requests
+import os
 import shutil
-from typing import Any, Dict, List, Optional
+import subprocess
+from typing import Any, Optional
+
+import requests
+import yaml
 
 
 class MCPRouter:
     """Registry and transport handler for MCP tools."""
 
     def __init__(self, config_path: str = "config/mcp_servers.yaml") -> None:
-        self.tools: Dict[str, Dict[str, Any]] = {}
+        self.tools: dict[str, dict[str, Any]] = {}
         if os.path.exists(config_path):
             self.load_config(config_path)
 
     def load_config(self, path: str) -> None:
         """Load tool info from a YAML file."""
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f) or []
         if isinstance(data, dict):
             servers = data.get("servers", [])
@@ -28,10 +29,10 @@ class MCPRouter:
             if name:
                 self.tools[name] = entry
 
-    def list_tools(self) -> List[str]:
+    def list_tools(self) -> list[str]:
         return list(self.tools.keys())
 
-    def get_tool(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_tool(self, name: str) -> Optional[dict[str, Any]]:
         return self.tools.get(name)
 
     def check_tool(self, name: str) -> bool:
@@ -51,7 +52,7 @@ class MCPRouter:
             return False
         return False
 
-    def call(self, name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def call(self, name: str, payload: dict[str, Any]) -> dict[str, Any]:
         """Send a payload to the given tool using its configured transport."""
         info = self.get_tool(name)
         if not info:

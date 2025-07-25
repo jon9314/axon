@@ -1,7 +1,9 @@
-from fastapi.testclient import TestClient
-from mcp_servers.markdown_backup_server import app, BASE_DIR
 import os
 import shutil
+
+from fastapi.testclient import TestClient
+
+from mcp_servers.markdown_backup_server import BASE_DIR, app
 
 client = TestClient(app)
 

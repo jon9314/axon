@@ -6,8 +6,9 @@ from __future__ import annotations
 import re
 import threading
 
-from .goal_tracker import GoalTracker
 from memory.memory_handler import MemoryHandler
+
+from .goal_tracker import GoalTracker
 from .notifier import Notifier
 
 

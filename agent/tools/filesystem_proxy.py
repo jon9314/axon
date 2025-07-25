@@ -1,8 +1,10 @@
 import os
-import requests
-from agent.plugin_loader import plugin
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+import requests
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from agent.plugin_loader import plugin
 
 BASE_URL = os.environ.get("FILESYSTEM_MCP_URL", "http://localhost:9001")
 
@@ -55,10 +57,11 @@ class FilesystemProxy(BaseTool):
         resp.raise_for_status()
         return resp.json()
 
+
 @plugin(
     name="filesystem",
     description="Interact with local filesystem via MCP",
-    usage="filesystem(command='read', path='file.txt')"
+    usage="filesystem(command='read', path='file.txt')",
 )
 def filesystem(command: str, path: str = "", content: str | None = None):
     tool = FilesystemProxy()

@@ -1,5 +1,6 @@
 import time
-from typing import Protocol, Iterable
+from collections.abc import Iterable
+from typing import Protocol
 
 
 class MemoryLike(Protocol):
@@ -22,13 +23,7 @@ class PastebackHandler:
     def __init__(self, memory_handler: MemoryLike):
         self.memory_handler = memory_handler
 
-    def store(
-        self, thread_id: str, prompt: str, response: str, model: str = "gpt"
-    ) -> None:
+    def store(self, thread_id: str, prompt: str, response: str, model: str = "gpt") -> None:
         ts = int(time.time())
-        self.memory_handler.add_fact(
-            thread_id, f"cloud_prompt_{ts}", prompt, identity=model
-        )
-        self.memory_handler.add_fact(
-            thread_id, f"cloud_response_{ts}", response, identity=model
-        )
+        self.memory_handler.add_fact(thread_id, f"cloud_prompt_{ts}", prompt, identity=model)
+        self.memory_handler.add_fact(thread_id, f"cloud_response_{ts}", response, identity=model)

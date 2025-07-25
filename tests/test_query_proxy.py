@@ -1,7 +1,8 @@
-from fastapi.testclient import TestClient
-from mcp_servers.query_server import app as query_app
-from agent.tools.query_proxy import QueryProxy
 import requests
+from fastapi.testclient import TestClient
+
+from agent.tools.query_proxy import QueryProxy
+from mcp_servers.query_server import app as query_app
 
 
 def make_mock(client: TestClient):

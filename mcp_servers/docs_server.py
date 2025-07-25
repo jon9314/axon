@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException
 import pydoc
 
+from fastapi import FastAPI, HTTPException
+
 app = FastAPI()
+
 
 @app.get("/get")
 def get_doc(topic: str):

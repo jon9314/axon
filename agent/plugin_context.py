@@ -55,6 +55,6 @@ class PluginContext:
 
 # Default context used by plugins
 context = PluginContext(
-    memory_handler=MemoryHandler(db_uri=settings.database.postgres_uri),
+    memory_handler=MemoryHandler(),
     goal_tracker=GoalTracker(db_uri=settings.database.postgres_uri),
 )

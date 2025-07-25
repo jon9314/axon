@@ -1,8 +1,10 @@
 import os
-import requests
-from agent.plugin_loader import plugin
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+import requests
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from agent.plugin_loader import plugin
 
 BASE_URL = os.environ.get("TIME_MCP_URL", "http://localhost:9002")
 
@@ -49,11 +51,8 @@ class TimeProxy(BaseTool):
         resp.raise_for_status()
         return resp.json()
 
-@plugin(
-    name="time",
-    description="Access system time via MCP",
-    usage="time(command='now')"
-)
+
+@plugin(name="time", description="Access system time via MCP", usage="time(command='now')")
 def time_tool(command: str, **kwargs):
     tool = TimeProxy()
     params = {"command": command, **kwargs}

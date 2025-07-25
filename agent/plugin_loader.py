@@ -1,12 +1,12 @@
 # axon/agent/plugin_loader.py
 
+import importlib
+import importlib.util
 import logging
 import os
-import importlib.util
-import importlib
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Dict, Callable
 
 
 @dataclass
@@ -18,7 +18,7 @@ class PluginInfo:
 
 
 # This dictionary will hold our loaded plugin metadata
-AVAILABLE_PLUGINS: Dict[str, PluginInfo] = {}
+AVAILABLE_PLUGINS: dict[str, PluginInfo] = {}
 
 
 def load_plugins(hot_reload: bool = False):
@@ -47,9 +47,7 @@ def load_plugins(hot_reload: bool = False):
                     if module_name in sys.modules and hot_reload:
                         importlib.reload(sys.modules[module_name])
                     else:
-                        spec = importlib.util.spec_from_file_location(
-                            module_name, plugin_path
-                        )
+                        spec = importlib.util.spec_from_file_location(module_name, plugin_path)
                         if spec and spec.loader:
                             plugin_module = importlib.util.module_from_spec(spec)
                             spec.loader.exec_module(plugin_module)
@@ -68,9 +66,7 @@ def load_plugins(hot_reload: bool = False):
                                     module_name,
                                 )
                         else:
-                            logging.error(
-                                "Could not create spec for plugin: %s", filename
-                            )
+                            logging.error("Could not create spec for plugin: %s", filename)
                             continue
                     logging.info("Loaded plugin module: %s", filename)
                 except (ImportError, OSError, SyntaxError, ValueError):

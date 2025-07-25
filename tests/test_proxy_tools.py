@@ -1,16 +1,18 @@
-from fastapi.testclient import TestClient
-from mcp_servers.filesystem_server import app as fs_app
-from mcp_servers.time_server import app as time_app
-from mcp_servers.calculator_server import app as calc_app
-from mcp_servers.markdown_backup_server import app as md_app
-from mcp_servers.github_server import app as gh_app
-from agent.tools.github_proxy import GitHubProxy
-from agent.tools.filesystem_proxy import FilesystemProxy
-from agent.tools.time_proxy import TimeProxy
-from agent.tools.calculator_proxy import CalculatorProxy
-from agent.tools.markdown_backup_proxy import MarkdownBackupProxy
 import subprocess
+
 import requests
+from fastapi.testclient import TestClient
+
+from agent.tools.calculator_proxy import CalculatorProxy
+from agent.tools.filesystem_proxy import FilesystemProxy
+from agent.tools.github_proxy import GitHubProxy
+from agent.tools.markdown_backup_proxy import MarkdownBackupProxy
+from agent.tools.time_proxy import TimeProxy
+from mcp_servers.calculator_server import app as calc_app
+from mcp_servers.filesystem_server import app as fs_app
+from mcp_servers.github_server import app as gh_app
+from mcp_servers.markdown_backup_server import app as md_app
+from mcp_servers.time_server import app as time_app
 
 
 def make_mock(client: TestClient):
