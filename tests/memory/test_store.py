@@ -51,3 +51,13 @@ def test_disk_persistence(tmp_path):
 
     repo2 = MemoryRepository(JSONFileMemoryStore(str(path)))
     assert repo2.store.get(rid) is not None
+
+
+def test_unlock(tmp_path):
+    store = JSONFileMemoryStore(str(tmp_path / "u.json"))
+    repo = MemoryRepository(store)
+    rid = repo.remember_fact("lock-me")
+    store.lock(rid)
+    assert store.get(rid).locked
+    store.unlock(rid)
+    assert not store.get(rid).locked
