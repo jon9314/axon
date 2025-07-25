@@ -37,3 +37,7 @@ class MemoryStore(ABC):
     @abstractmethod
     def lock(self, record_id: str) -> None:
         """Lock a record from modification."""
+
+    @abstractmethod
+    def unlock(self, record_id: str) -> None:
+        """Unlock a record so it can be modified."""
