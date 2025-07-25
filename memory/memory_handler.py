@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Optional
+from typing import Any, Optional
 
 from axon.memory import MemoryRepository
 
@@ -64,14 +64,15 @@ class MemoryHandler:
         domain: Optional[str] = None,
         tags: Iterable[str] | None = None,
     ) -> None:
-        metadata = {"identity": identity} if identity else None
-        self.repo.store.update(
-            key,
-            content=value,
-            scope=domain or thread_id,
-            tags=list(tags) if tags else [],
-            metadata=metadata,
-        )
+        update_fields: dict[str, Any] = {
+            "content": value,
+            "scope": domain or thread_id,
+        }
+        if tags is not None:
+            update_fields["tags"] = list(tags)
+        if identity is not None:
+            update_fields["metadata"] = {"identity": identity}
+        self.repo.store.update(key, **update_fields)
 
     def delete_fact(self, thread_id: str, key: str) -> bool:
         return self.repo.store.delete(key)
@@ -94,7 +95,9 @@ class MemoryHandler:
         if locked:
             self.repo.store.lock(key)
             return True
-        return False
+        # Allow unlocking previously locked records
+        self.repo.store.unlock(key)
+        return True
 
     def close_connection(self) -> None:
         pass

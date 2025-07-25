@@ -111,3 +111,10 @@ class JSONFileMemoryStore(MemoryStore):
             raise KeyError(record_id)
         rec.locked = True
         self._save()
+
+    def unlock(self, record_id: str) -> None:
+        rec = self._records.get(record_id)
+        if rec is None:
+            raise KeyError(record_id)
+        rec.locked = False
+        self._save()
