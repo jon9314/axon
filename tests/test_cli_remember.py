@@ -1,4 +1,5 @@
 from typer.testing import CliRunner
+
 import main
 
 
@@ -6,9 +7,7 @@ def test_remember_command(monkeypatch):
     calls = []
 
     class DummyCM:
-        def __init__(
-            self, thread_id="cli_thread", identity="cli_user", goal_tracker=None
-        ):
+        def __init__(self, thread_id="cli_thread", identity="cli_user", goal_tracker=None):
             pass
 
         def add_fact(self, key, value, identity=None, domain=None, tags=None):

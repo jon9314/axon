@@ -1,5 +1,6 @@
-from agent.mcp_router import MCPRouter
 from starlette.testclient import TestClient
+
+from agent.mcp_router import MCPRouter
 from mcp_servers.time_server import app as time_app
 
 
@@ -31,4 +32,3 @@ def test_call_http(monkeypatch):
     router.tools = {"time": {"transport": "http", "url": "http://unused"}}
     result = router.call("time", {"command": "now"})
     assert "timestamp" in result
-

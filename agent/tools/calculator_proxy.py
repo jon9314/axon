@@ -1,8 +1,10 @@
 import os
-import requests
-from agent.plugin_loader import plugin
-from qwen_agent.tools.base import BaseTool, register_tool
 from typing import Any
+
+import requests
+from qwen_agent.tools.base import BaseTool, register_tool
+
+from agent.plugin_loader import plugin
 
 BASE_URL = os.environ.get("CALC_MCP_URL", "http://localhost:9003")
 
@@ -52,10 +54,11 @@ class CalculatorProxy(BaseTool):
         resp.raise_for_status()
         return resp.json()
 
+
 @plugin(
     name="calculator",
     description="Perform calculations via MCP",
-    usage="calculator(command='evaluate', expr='2+2')"
+    usage="calculator(command='evaluate', expr='2+2')",
 )
 def calculator(command: str, **kwargs):
     tool = CalculatorProxy()

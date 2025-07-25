@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 import threading
 import time
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Iterable, Protocol
+from typing import Protocol
 
 from .notifier import Notifier
 
@@ -41,9 +42,7 @@ class ProactiveMemory:
         now = time.time()
         messages: list[str] = []
         # check memory for overdue reminders or tagged ideas
-        for _key, value, ident, _locked, tags in self.memory_handler.list_facts(
-            thread_id
-        ):
+        for _key, value, ident, _locked, tags in self.memory_handler.list_facts(thread_id):
             if ident == "reminder":
                 try:
                     data = json.loads(value)

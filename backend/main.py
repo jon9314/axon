@@ -110,12 +110,12 @@ app.add_middleware(
 )
 
 # Instantiate the handlers
-memory_handler = MemoryHandler(db_uri=settings.database.postgres_uri)
+memory_handler = MemoryHandler()
 goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri, notifier=Notifier())
 llm_router = LLMRouter()
 mcp_handler = MCPHandler()
 pasteback_handler = PastebackHandler(memory_handler)
-profile_manager = UserProfileManager(db_uri=settings.database.postgres_uri)
+profile_manager = UserProfileManager()
 reminder_manager = ReminderManager(Notifier(), cast(MemoryLike, memory_handler))
 session_tracker = SessionTracker()
 

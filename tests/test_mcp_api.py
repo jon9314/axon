@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
-from backend.main import app
+
 from agent.mcp_router import mcp_router
+from backend.main import app
 
 
 def test_list_mcp_tools_endpoint(monkeypatch):
@@ -8,6 +9,7 @@ def test_list_mcp_tools_endpoint(monkeypatch):
 
     class DummyResp:
         status_code = 200
+
     monkeypatch.setattr("agent.mcp_router.requests.get", lambda url, timeout=2: DummyResp())
 
     client = TestClient(app)

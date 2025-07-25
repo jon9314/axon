@@ -13,9 +13,7 @@ def test_schedule(monkeypatch):
             self.added = []
             self.deleted = []
 
-        def add_fact(
-            self, thread_id, key, value, identity=None, domain=None, tags=None
-        ):
+        def add_fact(self, thread_id, key, value, identity=None, domain=None, tags=None):
             self.added.append((thread_id, key, value, identity))
 
         def delete_fact(self, thread_id, key):

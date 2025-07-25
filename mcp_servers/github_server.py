@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException
-from fastapi import Body
-from pathlib import Path
 import subprocess
+from pathlib import Path
+
+from fastapi import Body, FastAPI, HTTPException
 
 app = FastAPI()
+
 
 @app.get("/list")
 def list_repo(repo_path: str):
@@ -17,13 +18,14 @@ def list_repo(repo_path: str):
     files = result.strip().splitlines()
     return {"files": files}
 
+
 @app.get("/read")
 def read_file(repo_path: str, file: str):
     repo_dir = Path(repo_path)
     target = repo_dir / file
     if not target.exists():
         raise HTTPException(status_code=404, detail="file not found")
-    with open(target, "r", encoding="utf-8") as f:
+    with open(target, encoding="utf-8") as f:
         content = f.read()
     return {"content": content}
 

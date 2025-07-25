@@ -1,4 +1,4 @@
-from agent.context_manager import ContextManager, ChatMessage
+from agent.context_manager import ChatMessage, ContextManager
 
 
 class DummyMemory:
@@ -27,9 +27,7 @@ class DummyGoalTracker:
 
 
 def test_chat_history_records_identity(monkeypatch):
-    monkeypatch.setattr(
-        "agent.context_manager.MemoryHandler", lambda db_uri=None: DummyMemory()
-    )
+    monkeypatch.setattr("agent.context_manager.MemoryHandler", lambda db_uri=None: DummyMemory())
     tracker = DummyGoalTracker()
     cm = ContextManager(thread_id="t1", identity="alice", goal_tracker=tracker)
     cm.add_chat_message("hello")

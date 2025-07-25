@@ -1,10 +1,9 @@
 # axon/agent/mcp_handler.py
 
-from typing import Tuple
-
 
 class MCPHandler:
     """Handle Model Context Protocol messages and normalize results."""
+
     def parse_message(self, message: dict) -> bool:
         """
         Checks if a message conforms to the basic MCP protocol by looking for
@@ -18,7 +17,7 @@ class MCPHandler:
         """
         # This simple check is the first step in routing and validating
         # tool-related commands.
-        is_mcp = 'mcp_protocol_version' in message
+        is_mcp = "mcp_protocol_version" in message
         print(f"Parsing message. Is MCP format: {is_mcp}")
         return is_mcp
 
@@ -34,16 +33,11 @@ class MCPHandler:
             dict: A dictionary formatted for the MCP protocol.
         """
         # This creates a standardized message format that tools can reliably parse.
-        mcp_message = {
-            "mcp_protocol_version": "1.0",
-            "tool_name": tool_name,
-            "arguments": args
-        }
+        mcp_message = {"mcp_protocol_version": "1.0", "tool_name": tool_name, "arguments": args}
         print(f"Generated MCP message for tool '{tool_name}'")
         return mcp_message
 
-
-    def _normalize(self, source: str, args: dict, output: dict) -> Tuple[str, float]:
+    def _normalize(self, source: str, args: dict, output: dict) -> tuple[str, float]:
         """Convert a tool response into a human readable summary.
 
         Parameters

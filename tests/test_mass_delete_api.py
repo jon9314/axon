@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
-from backend.main import app, memory_handler, goal_tracker
+
+from backend.main import app, goal_tracker, memory_handler
 
 
 def test_delete_memory_bulk(monkeypatch):

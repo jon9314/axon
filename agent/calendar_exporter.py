@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 import json
-from typing import Protocol, Iterable
+from collections.abc import Iterable
+from datetime import datetime, timedelta
+from typing import Protocol
 
 from icalendar import Calendar, Event
 
@@ -18,9 +19,7 @@ class MemoryLike(Protocol):
     ) -> list[tuple[str, str, str | None, bool, Iterable[str]]]: ...
 
 
-def _reminders_from_memory(
-    memory: MemoryLike, thread_id: str
-) -> list[dict[str, int | str]]:
+def _reminders_from_memory(memory: MemoryLike, thread_id: str) -> list[dict[str, int | str]]:
     results: list[dict[str, int | str]] = []
     for key, value, _ident, _locked, _tags in memory.list_facts(thread_id):
         if key.startswith("reminder_"):

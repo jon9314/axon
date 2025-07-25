@@ -1,7 +1,8 @@
-from fastapi.testclient import TestClient
-from mcp_servers.docs_server import app as docs_app
-from agent.tools.docs_proxy import DocsProxy
 import requests
+from fastapi.testclient import TestClient
+
+from agent.tools.docs_proxy import DocsProxy
+from mcp_servers.docs_server import app as docs_app
 
 
 def make_mock(client: TestClient):

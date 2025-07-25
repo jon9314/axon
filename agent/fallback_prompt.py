@@ -1,6 +1,5 @@
-from dataclasses import dataclass
 import json
-from typing import Tuple
+from dataclasses import dataclass
 
 
 @dataclass
@@ -12,7 +11,7 @@ class FallbackPrompt:
     reason: str
 
 
-def suggest_model(user_message: str) -> Tuple[str, str]:
+def suggest_model(user_message: str) -> tuple[str, str]:
     """Suggest a cloud model and reason based on the message."""
 
     lowered = user_message.lower()
@@ -37,9 +36,7 @@ def suggest_model(user_message: str) -> Tuple[str, str]:
     )
 
 
-def generate_prompt(
-    user_message: str, model: str | None = None, reason: str | None = None
-) -> dict:
+def generate_prompt(user_message: str, model: str | None = None, reason: str | None = None) -> dict:
     """Return a dict describing a cloud prompt."""
 
     if model is None or reason is None:

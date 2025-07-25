@@ -1,6 +1,6 @@
+import agent.llm_router as llm_router
 from agent.llm_router import LLMRouter
 from agent.plugin_loader import load_plugins
-import agent.llm_router as llm_router
 
 
 def test_llm_router_tool_call(monkeypatch):
@@ -9,22 +9,17 @@ def test_llm_router_tool_call(monkeypatch):
 
     class DummyAssistant:
         def __init__(self, function_list, llm, generate_cfg=None):
-            captured['function_list'] = function_list
-            captured['llm'] = llm
-            captured['generate_cfg'] = generate_cfg
+            captured["function_list"] = function_list
+            captured["llm"] = llm
+            captured["generate_cfg"] = generate_cfg
 
         def run_nonstream(self, messages):
-            captured['messages'] = messages
+            captured["messages"] = messages
             return [
                 {
                     "role": "assistant",
                     "content": "",
-                    "tool_calls": [
-                        {
-                            "name": "echo",
-                            "arguments": '{"text": "hi"}'
-                        }
-                    ],
+                    "tool_calls": [{"name": "echo", "arguments": '{"text": "hi"}'}],
                 },
                 {
                     "role": "tool",

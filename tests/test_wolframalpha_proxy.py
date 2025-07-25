@@ -1,7 +1,9 @@
-from fastapi.testclient import TestClient
-from mcp_servers.wolframalpha_server import app as wolfram_app
-from agent.tools.wolframalpha_proxy import WolframAlphaProxy
 import requests
+from fastapi.testclient import TestClient
+
+from agent.tools.wolframalpha_proxy import WolframAlphaProxy
+from mcp_servers.wolframalpha_server import app as wolfram_app
+
 
 class DummyResponse:
     def __init__(self, data, status=200):
@@ -17,13 +19,9 @@ def make_mock(client: TestClient):
     def get(url, params=None, **kwargs):
         if url.startswith("https://api.wolframalpha.com"):
             assert params["input"] == "2+2"
-            return DummyResponse({
-                "queryresult": {
-                    "pods": [
-                        {"id": "Result", "subpods": [{"plaintext": "4"}]}
-                    ]
-                }
-            })
+            return DummyResponse(
+                {"queryresult": {"pods": [{"id": "Result", "subpods": [{"plaintext": "4"}]}]}}
+            )
         path = url.split("/")[-1]
         return client.get(f"/{path}", params=params)
 

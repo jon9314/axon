@@ -1,12 +1,14 @@
-import uvicorn
 from multiprocessing import Process
-from .filesystem_server import app as fs_app
-from .time_server import app as time_app
+
+import uvicorn
+
 from .calculator_server import app as calc_app
-from .markdown_backup_server import app as md_app
-from .github_server import app as gh_app
 from .docs_server import app as docs_app
+from .filesystem_server import app as fs_app
+from .github_server import app as gh_app
+from .markdown_backup_server import app as md_app
 from .query_server import app as query_app
+from .time_server import app as time_app
 from .wolframalpha_server import app as wolfram_app
 
 SERVERS = [
@@ -20,9 +22,11 @@ SERVERS = [
     (wolfram_app, 9008),
 ]
 
+
 def run(app, port):
     # Listen on all interfaces so the backend container can reach the servers
     uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 if __name__ == "__main__":
     processes = []

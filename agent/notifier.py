@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 import platform
 import shutil
 import subprocess
-import logging
 
 try:
     from plyer import notification  # pragma: no cover - optional dep
