@@ -94,7 +94,9 @@ class MemoryHandler:
         if locked:
             self.repo.store.lock(key)
             return True
-        return False
+        # Allow unlocking previously locked records
+        self.repo.store.unlock(key)
+        return True
 
     def close_connection(self) -> None:
         pass
