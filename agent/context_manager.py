@@ -1,8 +1,8 @@
 # axon/agent/context_manager.py
 
+import logging
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Optional
 
 from agent.goal_tracker import GoalTracker
 from axon.config.settings import settings
@@ -22,7 +22,7 @@ class ContextManager:
         self,
         thread_id: str = "default_thread",
         identity: str = "default_user",
-        goal_tracker: Optional[GoalTracker] = None,
+        goal_tracker: GoalTracker | None = None,
     ) -> None:
         self.thread_id = thread_id
         self.identity = identity
@@ -34,8 +34,8 @@ class ContextManager:
         self,
         key: str,
         value: str,
-        identity: Optional[str] = None,
-        domain: Optional[str] = None,
+        identity: str | None = None,
+        domain: str | None = None,
         tags: Iterable[str] | None = None,
     ) -> None:
         """
@@ -62,19 +62,19 @@ class ContextManager:
         """
         Sets a new identity for the current context.
         """
-        print(f"Context identity switched to: {identity}")
+        logging.info("context-identity", extra={"identity": identity})
         self.identity = identity
 
     def set_thread(self, thread_id: str):
         """Switches the context to a different thread."""
-        print(f"Context thread switched to: {thread_id}")
+        logging.info("context-thread", extra={"thread_id": thread_id})
         self.thread_id = thread_id
 
     def update_fact(
         self,
         key: str,
         value: str,
-        domain: Optional[str] = None,
+        domain: str | None = None,
         tags: Iterable[str] | None = None,
     ) -> None:
         self.memory_handler.update_fact(
@@ -92,7 +92,7 @@ class ContextManager:
     def set_lock(self, key: str, locked: bool) -> bool:
         return self.memory_handler.set_lock(self.thread_id, key, locked)
 
-    def add_chat_message(self, text: str, identity: Optional[str] = None) -> None:
+    def add_chat_message(self, text: str, identity: str | None = None) -> None:
         """Record a chat message with its speaker identity and detect goals."""
         speaker = identity or self.identity
         self.chat_history.append(ChatMessage(identity=speaker, text=text))

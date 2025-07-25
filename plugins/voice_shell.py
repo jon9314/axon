@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import logging
 import shutil
 import subprocess
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -24,8 +24,8 @@ __all__ = ["VoiceShellPlugin"]
 
 
 class ShellInput(BaseModel):
-    timeout: Optional[float] = None
-    model_path: Optional[str] = None
+    timeout: float | None = None
+    model_path: str | None = None
     wakeword: str = "axon"
 
 
@@ -41,13 +41,13 @@ def _say(text: str) -> None:
             return
         except Exception:
             pass
-    print(text)
+    logging.info("say", extra={"text": text})
 
 
-def _record(duration: float = 5.0, rate: int = 16000) -> Optional[bytes]:
+def _record(duration: float = 5.0, rate: int = 16000) -> bytes | None:
     """Record audio from the microphone and return raw bytes."""
     if not sd:  # pragma: no cover - optional dependency
-        print("sounddevice required for recording")
+        logging.error("sounddevice-missing")
         return None
     audio = sd.rec(int(duration * rate), samplerate=rate, channels=1, dtype="int16")
     sd.wait()

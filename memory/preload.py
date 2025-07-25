@@ -3,6 +3,7 @@
 """Load sample memory entries on startup."""
 
 import json
+import logging
 
 import yaml
 
@@ -14,7 +15,7 @@ def preload(memory_handler: MemoryHandler, path: str = "data/initial_memory.yaml
         with open(path) as f:
             data = yaml.safe_load(f)
     except FileNotFoundError:
-        print("No preload file found.")
+        logging.info("preload-missing")
         return
 
     for fact in data.get("facts", []):

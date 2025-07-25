@@ -1,7 +1,7 @@
 # axon/memory/vector_store.py
 
+import logging
 import uuid
-from typing import Optional
 
 from qdrant_client import QdrantClient, models
 
@@ -16,12 +16,12 @@ class VectorStore:
         """
         Initializes the VectorStore and connects to the Qdrant client.
         """
-        self.client: Optional[QdrantClient]
+        self.client: QdrantClient | None
         try:
             self.client = QdrantClient(host=host, port=port)
-            print("Successfully connected to Qdrant.")
+            logging.info("qdrant-connected")
         except Exception as e:
-            print(f"Error connecting to Qdrant: {e}")
+            logging.error("qdrant-error", extra={"error": str(e)})
             self.client = None
 
     def add_memory(
@@ -35,7 +35,7 @@ class VectorStore:
         Adds a new memory (text and its vector representation) to a Qdrant collection.
         """
         if not self.client:
-            print("No Qdrant client connection.")
+            logging.error("qdrant-missing")
             return
 
         # Create the collection on first insert without wiping existing data.
@@ -75,7 +75,7 @@ class VectorStore:
             ],
             wait=True,
         )
-        print(f"Added memory to collection '{collection_name}'")
+        logging.info("memory-added", extra={"collection": collection_name})
 
     def search_memory(
         self,
@@ -88,7 +88,7 @@ class VectorStore:
         Searches for similar memories in a Qdrant collection using a query vector.
         """
         if not self.client:
-            print("No Qdrant client connection.")
+            logging.error("qdrant-missing")
             return []
 
         query_filter = None
@@ -109,12 +109,15 @@ class VectorStore:
                 limit=limit,
                 query_filter=query_filter,
             )
-            print(
-                f"Searched collection '{collection_name}' and found {len(search_result)} results."
+            logging.info(
+                "memory-search",
+                extra={"collection": collection_name, "results": len(search_result)},
             )
             return search_result
         except Exception as e:
-            print(f"Could not search collection '{collection_name}': {e}")
+            logging.error(
+                "memory-search-failed", extra={"error": str(e), "collection": collection_name}
+            )
             return []
 
     def hybrid_search(

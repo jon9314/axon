@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import traceback
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from pathlib import Path
 from time import monotonic
 from typing import Any
 
 from pydantic import BaseModel, create_model
+
+from axon.obs.records import ErrorRecord, PluginCallRecord
+from axon.obs.tracer import current_run
 
 from .base import Plugin
 from .manifest import Manifest, load_manifest
@@ -118,18 +123,40 @@ class PluginLoader:
             )
 
         attempt = 0
+        result: Any | None = None
+        err: Exception | None = None
+        rec = PluginCallRecord(plugin=name, started_at=datetime.utcnow())
         while True:
             try:
                 with AuditLog(name, "execute"):
                     if timeout is None:
-                        return call()
-                    with ThreadPoolExecutor(max_workers=1) as ex:
-                        future = ex.submit(call)
-                        return future.result(timeout=timeout)
+                        result = call()
+                    else:
+                        with ThreadPoolExecutor(max_workers=1) as ex:
+                            future = ex.submit(call)
+                            result = future.result(timeout=timeout)
+                rec.success = True
+                break
             except Exception as exc:
                 attempt += 1
+                err = exc
                 if attempt > retries:
-                    raise exc
+                    rec.success = False
+                    rec.error = ErrorRecord(
+                        type=type(exc).__name__, message=str(exc), traceback=traceback.format_exc()
+                    )
+                    break
+        rec.ended_at = datetime.utcnow()
+        rec.duration_ms = (rec.ended_at - rec.started_at).total_seconds() * 1000
+        rec.truncated_input = str(data)[:200]
+        if result is not None:
+            rec.truncated_output = str(result)[:200]
+        run = current_run()
+        if run:
+            run.plugin_calls.append(rec)
+        if err and attempt > retries:
+            raise err
+        return result
 
     def shutdown_all(self) -> None:
         for name, plugin in self.plugins.items():

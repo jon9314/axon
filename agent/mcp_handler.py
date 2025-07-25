@@ -1,5 +1,7 @@
 # axon/agent/mcp_handler.py
 
+import logging
+
 
 class MCPHandler:
     """Handle Model Context Protocol messages and normalize results."""
@@ -18,7 +20,7 @@ class MCPHandler:
         # This simple check is the first step in routing and validating
         # tool-related commands.
         is_mcp = "mcp_protocol_version" in message
-        print(f"Parsing message. Is MCP format: {is_mcp}")
+        logging.debug("mcp-parse", extra={"is_mcp": is_mcp})
         return is_mcp
 
     def generate_message(self, tool_name: str, args: dict) -> dict:
@@ -34,7 +36,7 @@ class MCPHandler:
         """
         # This creates a standardized message format that tools can reliably parse.
         mcp_message = {"mcp_protocol_version": "1.0", "tool_name": tool_name, "arguments": args}
-        print(f"Generated MCP message for tool '{tool_name}'")
+        logging.debug("mcp-generate", extra={"tool": tool_name})
         return mcp_message
 
     def _normalize(self, source: str, args: dict, output: dict) -> tuple[str, float]:
@@ -87,7 +89,7 @@ class MCPHandler:
             elif "content" in output:
                 summary = f"Fetched markdown note {note}"
             elif "matches" in output:
-                summary = f"Found {len(output['matches'])} notes for '{args.get('query','')}'"
+                summary = f"Found {len(output['matches'])} notes for '{args.get('query', '')}'"
         if not summary:
             confidence = 0.5
             summary = str(output)
