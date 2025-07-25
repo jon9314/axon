@@ -2,10 +2,10 @@
 
 """Simple goal tracking backed by PostgreSQL."""
 
+import logging
 import re
 import threading
 from datetime import datetime
-from typing import Optional
 
 import psycopg2
 
@@ -24,7 +24,7 @@ class GoalTracker:
             self.conn = psycopg2.connect(db_uri)
             self._ensure_table()
         except psycopg2.OperationalError as e:
-            print(f"Error connecting to PostgreSQL for goals: {e}")
+            logging.error("goal-db", extra={"error": str(e)})
             self.conn = None
         self.notifier = notifier or Notifier()
         self._prompt_timer: threading.Timer | None = None
@@ -101,7 +101,7 @@ class GoalTracker:
         self,
         thread_id: str,
         text: str,
-        identity: Optional[str] = None,
+        identity: str | None = None,
         priority: int = 0,
         deadline: datetime | None = None,
     ) -> None:
@@ -116,7 +116,7 @@ class GoalTracker:
             self.conn.commit()
 
     def detect_and_add_goal(
-        self, thread_id: str, message: str, identity: Optional[str] = None
+        self, thread_id: str, message: str, identity: str | None = None
     ) -> bool:
         """Detect goal-related phrases in a message and log them."""
         patterns = [r"i want to .+", r"remind me .+"]

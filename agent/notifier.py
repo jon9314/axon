@@ -91,6 +91,6 @@ class Notifier:
                 sent = False
 
         if not sent:
-            print(f"[NOTIFY] {text}")
+            logging.info("notify", extra={"text": text})
 
         self._speak(text)

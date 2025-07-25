@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar
@@ -156,10 +157,10 @@ def validate_or_die() -> Settings:
     try:
         return get_settings()
     except ConfigError as exc:  # pragma: no cover - validation
-        print("Invalid configuration:")
+        logging.error("invalid-config")
         for err in exc.error.errors():
             loc = ".".join(str(p) for p in err["loc"])
-            print(f"- {loc}: {err['msg']}")
+            logging.error("config-error", extra={"loc": loc, "error": err["msg"]})
         raise SystemExit(1) from None
 
 
