@@ -38,6 +38,9 @@ def check_service(url: str, timeout: float = 2) -> bool:
         else:
             port = 0
 
+    if (port == 0 or port is None) and parsed.scheme == "redis":
+        port = 6379
+
     if port == 0 or port is None:
         raise ValueError("Port required for service check")
 

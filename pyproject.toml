@@ -1,14 +1,14 @@
 [tool.poetry]
 license = "MIT"
 name = "axon"
-version = "0.2.0"
+version = "0.2.1"
 description = "Axon Project"
 authors = ["Your Name <you@example.com>"]
 package-mode = false
 
 [project]
 name = "axon"
-version = "0.2.0"
+version = "0.2.1"
 description = "Axon Project"
 dynamic = ["dependencies", "optional-dependencies"]
 

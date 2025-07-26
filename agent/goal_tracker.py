@@ -19,6 +19,8 @@ from axon.utils.health import service_status
 
 from .notifier import Notifier
 
+logger = logging.getLogger(__name__)
+
 
 class GoalTracker:
     def __init__(
@@ -28,7 +30,7 @@ class GoalTracker:
     ) -> None:
         self.conn = None
         if not db_uri or not service_status.postgres:
-            logging.info("goal-db-disabled")
+            logger.info("goal-db-disabled")
         elif not HAS_PSYCOPG2:
             raise RuntimeError("psycopg2 not installed; install axon[postgres]")
         else:
@@ -36,11 +38,15 @@ class GoalTracker:
                 self.conn = psycopg2.connect(db_uri)
                 self._ensure_table()
             except psycopg2.OperationalError as e:
-                logging.error("goal-db", extra={"error": str(e)})
+                logger.error("goal-db", extra={"error": str(e)})
                 service_status.postgres = False
                 self.conn = None
         self.notifier = notifier or Notifier()
         self._prompt_timer: threading.Timer | None = None
+
+    def _disabled(self) -> bool:
+        """Return True if Postgres is unavailable."""
+        return getattr(self, "conn", None) is None
 
     def _ensure_table(self) -> None:
         if not self.conn:
@@ -118,8 +124,10 @@ class GoalTracker:
         priority: int = 0,
         deadline: datetime | None = None,
     ) -> None:
-        if not self.conn:
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
             return
+        assert self.conn  # NOTE: mypy safeguard
         deferred = self._is_deferred(text)
         with self.conn.cursor() as cur:
             cur.execute(
@@ -132,6 +140,10 @@ class GoalTracker:
         self, thread_id: str, message: str, identity: str | None = None
     ) -> bool:
         """Detect goal-related phrases in a message and log them."""
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
+            return False
+        assert self.conn
         patterns = [r"i want to .+", r"remind me .+"]
         for pat in patterns:
             if re.search(pat, message, re.IGNORECASE):
@@ -140,8 +152,10 @@ class GoalTracker:
         return False
 
     def list_goals(self, thread_id: str):
-        if not self.conn:
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
             return []
+        assert self.conn
         with self.conn.cursor() as cur:
             cur.execute(
                 "SELECT id, text, completed, identity, deferred, priority, deadline FROM goals WHERE thread_id=%s",
@@ -150,8 +164,10 @@ class GoalTracker:
             return cur.fetchall()
 
     def list_deferred_goals(self, thread_id: str):
-        if not self.conn:
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
             return []
+        assert self.conn
         with self.conn.cursor() as cur:
             cur.execute(
                 "SELECT id, text, completed, identity, deferred, priority, deadline FROM goals WHERE thread_id=%s AND deferred=TRUE",
@@ -160,8 +176,10 @@ class GoalTracker:
             return cur.fetchall()
 
     def complete_goal(self, goal_id: int) -> None:
-        if not self.conn:
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
             return
+        assert self.conn
         with self.conn.cursor() as cur:
             cur.execute(
                 "UPDATE goals SET completed=TRUE WHERE id=%s",
@@ -171,8 +189,10 @@ class GoalTracker:
 
     def delete_goals(self, thread_id: str) -> int:
         """Delete all goals for a thread."""
-        if not self.conn:
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
             return 0
+        assert self.conn
         with self.conn.cursor() as cur:
             cur.execute("DELETE FROM goals WHERE thread_id=%s", (thread_id,))
             deleted = cur.rowcount
@@ -188,6 +208,10 @@ class GoalTracker:
 
     def start_deferred_prompting(self, thread_id: str, interval_seconds: float = 3600) -> None:
         """Begin periodic reminders for deferred goals."""
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
+            return
+        assert self.conn
         if self._prompt_timer:
             self._prompt_timer.cancel()
         self._prompt_timer = threading.Timer(
@@ -200,6 +224,9 @@ class GoalTracker:
 
     def stop_deferred_prompting(self) -> None:
         """Stop periodic deferred goal reminders."""
+        if self._disabled():
+            logger.debug("GoalTracker disabled (no Postgres)")
+            return
         if self._prompt_timer:
             self._prompt_timer.cancel()
             self._prompt_timer = None
