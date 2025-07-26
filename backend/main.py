@@ -29,6 +29,7 @@ from agent.plugin_loader import AVAILABLE_PLUGINS, load_plugins
 from agent.reminder import MemoryLike, ReminderManager
 from agent.session_tracker import SessionTracker
 from axon.config.settings import settings
+from axon.utils.health import check_service, service_status
 from memory.memory_handler import MemoryHandler
 from memory.preload import preload
 from memory.user_profile import UserProfileManager
@@ -39,6 +40,21 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
+# NOTE: check external services and record availability
+if settings.database.postgres_uri:
+    service_status.postgres = check_service(settings.database.postgres_uri)
+    if not service_status.postgres:
+        logging.warning("Postgres unreachable—goal tracking disabled.")
+if settings.database.qdrant_host:
+    q_url = f"tcp://{settings.database.qdrant_host}:{settings.database.qdrant_port}"
+    service_status.qdrant = check_service(q_url)
+    if not service_status.qdrant:
+        logging.warning("Qdrant unreachable—vector search disabled.")
+if settings.database.redis_url:
+    service_status.redis = check_service(settings.database.redis_url)
+    if not service_status.redis:
+        logging.warning("Redis unreachable—fallback to memory store.")
+
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     """Simple in-memory rate limiter and optional token auth."""
@@ -48,9 +64,12 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         self.limit = limit
         self.token = token
         self.calls: dict[str, list[float]] = {}
-        self.redis = (
-            redis.from_url(settings.database.redis_url) if settings.database.redis_url else None
-        )
+        self.redis = None
+        if service_status.redis and settings.database.redis_url:
+            try:
+                self.redis = redis.from_url(settings.database.redis_url)
+            except Exception as exc:  # pragma: no cover - optional Redis
+                logging.warning("Redis init error: %s", exc)
 
     async def dispatch(self, request: Request, call_next):
         if self.token and request.headers.get("X-API-Token") != self.token:
@@ -111,7 +130,10 @@ app.add_middleware(
 
 # Instantiate the handlers
 memory_handler = MemoryHandler()
-goal_tracker = GoalTracker(db_uri=settings.database.postgres_uri, notifier=Notifier())
+goal_tracker = GoalTracker(
+    db_uri=settings.database.postgres_uri if service_status.postgres else None,
+    notifier=Notifier(),
+)
 llm_router = LLMRouter()
 mcp_handler = MCPHandler()
 pasteback_handler = PastebackHandler(memory_handler)

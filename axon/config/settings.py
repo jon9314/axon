@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import shutil
 from enum import Enum
 from pathlib import Path
 from typing import Any, ClassVar
@@ -24,6 +25,14 @@ EXAMPLE_PATH = ROOT_DIR / "config" / "settings.example.yaml"
 LOCAL_PATH = ROOT_DIR / "config" / "settings.yaml"
 
 
+def ensure_default_config() -> None:
+    """Create a local config from the example if missing."""
+    if not LOCAL_PATH.exists():
+        LOCAL_PATH.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(EXAMPLE_PATH, LOCAL_PATH)
+        logging.warning("settings.yaml missing, copied example")
+
+
 def _yaml_source(
     path: Path, settings_cls: type[BaseSettings]
 ) -> sources.PydanticBaseSettingsSource:
@@ -42,7 +51,8 @@ class LogLevel(str, Enum):
 class DatabaseSettings(BaseModel):
     """Database and vector store settings."""
 
-    postgres_uri: str
+    postgres_uri: str | None = None
+    sqlite_path: str | None = "data/axon.db"
     qdrant_host: str = "localhost"
     qdrant_port: int = 6333
     redis_url: str | None = None
@@ -69,7 +79,7 @@ class AppConfig(BaseModel):
 class Settings(BaseSettings):
     """Global application settings."""
 
-    database: DatabaseSettings
+    database: DatabaseSettings = DatabaseSettings()
     llm: LlmSettings = LlmSettings()
     app: AppConfig = AppConfig()
 
@@ -119,6 +129,11 @@ class Settings(BaseSettings):
         data = mask(self.model_dump())
         return yaml.safe_dump(data, sort_keys=False)
 
+    def model_post_init(self, __context: Any) -> None:
+        """Validate DB config after loading."""
+        if not (self.database.postgres_uri or self.database.sqlite_path):
+            raise ValueError("postgres_uri or sqlite_path required")
+
     @classmethod
     def dump_example(cls, path: str | Path) -> None:
         path = Path(path)
@@ -135,6 +150,7 @@ def get_settings() -> Settings:
     """Return cached Settings instance."""
     global _settings_cache
     if _settings_cache is None:
+        ensure_default_config()
         try:
             _settings_cache = Settings()  # type: ignore[call-arg]
         except ValidationError as exc:  # pragma: no cover - validation

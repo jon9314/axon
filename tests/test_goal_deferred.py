@@ -1,4 +1,6 @@
-from agent.goal_tracker import GoalTracker
+import pytest
+
+from agent.goal_tracker import HAS_PSYCOPG2, GoalTracker
 
 
 class DummyCursor:
@@ -34,6 +36,8 @@ class DummyConn:
 
 
 def test_add_goal_marks_deferred(monkeypatch):
+    if not HAS_PSYCOPG2:
+        pytest.skip("psycopg2 missing")
     cur = DummyCursor()
     conn = DummyConn(cur)
     monkeypatch.setattr("psycopg2.connect", lambda *a, **k: conn)
@@ -45,6 +49,8 @@ def test_add_goal_marks_deferred(monkeypatch):
 
 
 def test_list_deferred(monkeypatch):
+    if not HAS_PSYCOPG2:
+        pytest.skip("psycopg2 missing")
     cur = DummyCursor()
     cur.fetchall_result = [(1, "Someday I might travel", False, None, True, 0, None)]
     conn = DummyConn(cur)
@@ -55,6 +61,8 @@ def test_list_deferred(monkeypatch):
 
 
 def test_priority_and_deadline(monkeypatch):
+    if not HAS_PSYCOPG2:
+        pytest.skip("psycopg2 missing")
     from datetime import datetime
 
     cur = DummyCursor()
@@ -68,6 +76,8 @@ def test_priority_and_deadline(monkeypatch):
 
 
 def test_deferred_prompt(monkeypatch):
+    if not HAS_PSYCOPG2:
+        pytest.skip("psycopg2 missing")
     called = []
 
     class DummyNotifier:

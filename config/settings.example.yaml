@@ -1,5 +1,6 @@
 database:
   postgres_uri: "postgresql://user:password@localhost:5432/axon_db"
+  sqlite_path: "data/axon.db"
   qdrant_host: "localhost"
   qdrant_port: 6333
   redis_url: "redis://localhost:6379/0"

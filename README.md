@@ -16,6 +16,8 @@ npm run dev
 
 The backend listens on `localhost:8000` and the frontend (Vite) runs on `localhost:5173` by default. Edit memory via the sidebar in the UI.
 
+First launch automatically copies `config/settings.example.yaml` to `config/settings.yaml` if missing. Install optional features with `poetry install --with calendar,postgres,vector,notify`.
+
 Plugins can be added by dropping Python files into the `plugins/` directory.
 Run `python main.py cli` to load plugins (hot reloaded each launch). Each
 plugin provides metadata such as name, description, and usage via the
@@ -121,6 +123,7 @@ Install them via `pip install pyperclip keyboard` if missing.
 Example configuration files are available in `.env.example`,
 `config/settings.example.yaml`, and the default profiles in
 `config/user_prefs.yaml`.
+Axon creates `config/settings.yaml` from the example on first run if it doesn't exist.
 
 ## Qwen-Agent
 

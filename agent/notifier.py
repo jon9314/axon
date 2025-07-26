@@ -9,8 +9,11 @@ import subprocess
 
 try:
     from plyer import notification  # pragma: no cover - optional dep
+
+    HAS_PLYER = True
 except Exception:  # pragma: no cover - optional dep
     notification = None
+    HAS_PLYER = False
 
 
 class Notifier:
