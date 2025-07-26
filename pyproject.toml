@@ -6,6 +6,12 @@ description = "Axon Project"
 authors = ["Your Name <you@example.com>"]
 package-mode = false
 
+[project]
+name = "axon"
+version = "0.2.0"
+description = "Axon Project"
+dynamic = ["dependencies", "optional-dependencies"]
+
 [tool.poetry.dependencies]
 python = ">=3.11,<3.14"
 fastapi = "^0.110.0"
@@ -25,7 +31,8 @@ rich = "^14.0.0"
 qrcode = "^7.4"
 redis = "^5.0.0"
 
-[tool.poetry.extras]
+
+[project.optional-dependencies]
 calendar = ["icalendar"]
 postgres = ["psycopg2-binary"]
 vector = ["qdrant-client"]

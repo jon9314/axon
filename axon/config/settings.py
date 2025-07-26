@@ -20,6 +20,8 @@ class ConfigError(RuntimeError):
         self.error = error
 
 
+logger = logging.getLogger(__name__)
+
 ROOT_DIR = Path(__file__).resolve().parents[2]
 EXAMPLE_PATH = ROOT_DIR / "config" / "settings.example.yaml"
 LOCAL_PATH = ROOT_DIR / "config" / "settings.yaml"
@@ -29,8 +31,11 @@ def ensure_default_config() -> None:
     """Create a local config from the example if missing."""
     if not LOCAL_PATH.exists():
         LOCAL_PATH.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(EXAMPLE_PATH, LOCAL_PATH)
-        logging.warning("settings.yaml missing, copied example")
+        if EXAMPLE_PATH.exists():
+            shutil.copy(EXAMPLE_PATH, LOCAL_PATH)
+            logger.warning("settings.yaml missing, copied example")
+        else:  # NOTE: fallback to env vars when example missing
+            logger.error("No example settings file packaged; starting with env-vars only")
 
 
 def _yaml_source(
