@@ -2,6 +2,15 @@ import socket
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+# NOTE: default ports used when URL omits one
+_DEFAULT_PORTS = {
+    "postgres": 5432,
+    "postgresql": 5432,
+    "qdrant": 6333,
+    "redis": 6379,
+    "mqtt": 1883,
+}
+
 
 @dataclass
 class ServiceStatus:
@@ -28,18 +37,14 @@ def check_service(url: str, timeout: float = 2) -> bool:
         except ValueError:
             pass
 
+    scheme = parsed.scheme.lower()
     if port is None:
-        if parsed.scheme.startswith("postgres"):
-            port = 5432
-        elif parsed.scheme.startswith("qdrant"):
-            port = 6333
-        elif parsed.scheme == "redis":
-            port = 6379
-        else:
-            port = 0
+        port = _DEFAULT_PORTS.get(scheme)
 
-    if port == 0 or port is None:
+    if port in (0, None):
         raise ValueError("Port required for service check")
+
+    assert port is not None  # NOTE: validated above
 
     try:
         with socket.create_connection((host, port), timeout=timeout):
@@ -47,11 +52,11 @@ def check_service(url: str, timeout: float = 2) -> bool:
     except OSError:
         success = False
 
-    if port == 5432 or parsed.scheme.startswith("postgres"):
+    if scheme.startswith("postgres") or port == _DEFAULT_PORTS["postgres"]:
         service_status.postgres = success
-    elif port == 6333 or parsed.scheme.startswith("qdrant"):
+    elif scheme.startswith("qdrant") or port == _DEFAULT_PORTS["qdrant"]:
         service_status.qdrant = success
-    elif port == 6379 or parsed.scheme == "redis":
+    elif scheme == "redis" or port == _DEFAULT_PORTS["redis"]:
         service_status.redis = success
 
     return success

@@ -4,6 +4,8 @@ import pytest
 
 from memory.vector_store import HAS_QDRANT, VectorStore
 
+pytestmark = pytest.mark.needs_qdrant  # NOTE: auto-skip via conftest
+
 if HAS_QDRANT:
     from qdrant_client.http import models
 else:  # pragma: no cover - optional qdrant

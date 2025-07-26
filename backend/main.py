@@ -28,6 +28,7 @@ from agent.pasteback_handler import PastebackHandler
 from agent.plugin_loader import AVAILABLE_PLUGINS, load_plugins
 from agent.reminder import MemoryLike, ReminderManager
 from agent.session_tracker import SessionTracker
+from axon.api.routes.system import router as system_router  # NOTE: health route
 from axon.config.settings import settings
 from axon.utils.health import check_service, service_status
 from memory.memory_handler import MemoryHandler
@@ -122,6 +123,7 @@ app = FastAPI(
     description="The backend service for the Axon project, handling API requests and WebSocket connections.",
     version="0.1.0",
 )
+app.include_router(system_router)
 app.add_middleware(
     RateLimiterMiddleware,
     limit=settings.app.rate_limit_per_minute,

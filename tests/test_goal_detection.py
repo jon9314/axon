@@ -3,6 +3,7 @@ from agent.goal_tracker import GoalTracker
 
 def test_detect_goal_creates_entry(monkeypatch):
     tracker = GoalTracker.__new__(GoalTracker)
+    tracker.conn = object()  # NOTE: pretend DB connected
     calls = []
 
     def dummy_add(thread_id, text, identity=None):
