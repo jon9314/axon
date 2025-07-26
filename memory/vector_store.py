@@ -2,8 +2,29 @@
 
 import logging
 import uuid
+from typing import Any
 
-from qdrant_client import QdrantClient, models
+from axon.utils.health import service_status
+
+try:
+    from qdrant_client import QdrantClient, models
+
+    HAS_QDRANT = True
+except ImportError:  # NOTE: vector features optional
+    from types import SimpleNamespace
+
+    HAS_QDRANT = False
+    QdrantClient = Any  # type: ignore
+    models = SimpleNamespace(
+        ScoredPoint=object,
+        PayloadSchemaType=SimpleNamespace(KEYWORD=object),
+        Distance=SimpleNamespace(COSINE=object),
+        VectorParams=object,
+        FieldCondition=object,
+        Filter=object,
+        MatchValue=object,
+        PointStruct=object,
+    )
 
 
 class VectorStore:
@@ -13,16 +34,19 @@ class VectorStore:
     """
 
     def __init__(self, host: str, port: int):
-        """
-        Initializes the VectorStore and connects to the Qdrant client.
-        """
-        self.client: QdrantClient | None
+        """Initialise the vector store connection."""
+        self.client: QdrantClient | None = None
+        if not service_status.qdrant:
+            logging.info("qdrant-disabled")
+            return
+        if not HAS_QDRANT:
+            raise RuntimeError("qdrant-client not installed; install axon[vector]")
         try:
             self.client = QdrantClient(host=host, port=port)
             logging.info("qdrant-connected")
-        except Exception as e:
+        except Exception as e:  # pragma: no cover - network
             logging.error("qdrant-error", extra={"error": str(e)})
-            self.client = None
+            service_status.qdrant = False
 
     def add_memory(
         self,

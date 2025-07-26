@@ -31,19 +31,32 @@ def test_env_override(monkeypatch, tmp_path):
 
 def test_missing_required_field(tmp_path):
     example = tmp_path / "example.yaml"
+    local = tmp_path / "local.yaml"
     write_yaml(example, {})
-    reload_settings(example_file=example, local_file=None)
+    write_yaml(local, {})
+    reload_settings(example_file=example, local_file=local)
+    validate_or_die()
+
+
+def test_missing_all_db_fields(tmp_path):
+    example = tmp_path / "example.yaml"
+    local = tmp_path / "local.yaml"
+    write_yaml(example, {"database": {"sqlite_path": None}})
+    write_yaml(local, {})
+    reload_settings(example_file=example, local_file=local)
     with pytest.raises(SystemExit):
         validate_or_die()
 
 
 def test_invalid_enum_value(tmp_path):
     example = tmp_path / "example.yaml"
+    local = tmp_path / "local.yaml"
     write_yaml(
         example,
         {"database": {"postgres_uri": "x"}, "app": {"log_level": "bogus"}},
     )
-    reload_settings(example_file=example, local_file=None)
+    write_yaml(local, {})
+    reload_settings(example_file=example, local_file=local)
     with pytest.raises(SystemExit):
         validate_or_die()
 
@@ -57,7 +70,9 @@ def test_secret_redacted(tmp_path):
             "app": {"api_token": "secret"},
         },
     )
-    reload_settings(example_file=example, local_file=None)
+    local = tmp_path / "local.yaml"
+    write_yaml(local, {})
+    reload_settings(example_file=example, local_file=local)
     dumped = get_settings().pretty_dump(mask_secrets=True)
     assert "secret" not in dumped
     assert "***" in dumped
@@ -68,10 +83,12 @@ def test_reload_settings(monkeypatch, tmp_path):
     example2 = tmp_path / "ex2.yaml"
     write_yaml(example1, {"database": {"postgres_uri": "a"}})
     write_yaml(example2, {"database": {"postgres_uri": "b"}})
-    reload_settings(example_file=example1, local_file=None)
+    local = tmp_path / "local.yaml"
+    write_yaml(local, {})
+    reload_settings(example_file=example1, local_file=local)
     orig = get_settings()
     assert orig.database.postgres_uri == "a"
-    reload_settings(example_file=example2, local_file=None)
+    reload_settings(example_file=example2, local_file=local)
     new = get_settings()
     assert new.database.postgres_uri == "b"
     assert new is not orig

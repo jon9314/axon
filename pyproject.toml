@@ -1,7 +1,7 @@
 [tool.poetry]
 license = "MIT"
 name = "axon"
-version = "0.1.0"
+version = "0.2.0"
 description = "Axon Project"
 authors = ["Your Name <you@example.com>"]
 package-mode = false
@@ -13,21 +13,23 @@ uvicorn = {extras = ["standard"], version = "^0.27.1"}
 pydantic = "^2.6.4"
 pydantic-settings = "^2.2.1"
 python-dotenv = "^1.0.1"
-psycopg2-binary = "^2.9.9"
-qdrant-client = "^1.7.3"
 pyyaml = "^6.0.1"
 typer = "^0.9.0"
 requests = "^2.31.0"
 httpx = "^0.27.0"
 pyperclip = "^1.8.2"
 keyboard = "^0.13.5"
-plyer = "^2.1.0"
 qwen-agent = "0.0.27"
 python-dateutil = "^2.9.0.post0"
-icalendar = "^6.3.1"
 rich = "^14.0.0"
 qrcode = "^7.4"
 redis = "^5.0.0"
+
+[tool.poetry.extras]
+calendar = ["icalendar"]
+postgres = ["psycopg2-binary"]
+vector = ["qdrant-client"]
+notify = ["plyer"]
 
 [tool.poetry.group.dev.dependencies]
 ruff = "==0.3.2"

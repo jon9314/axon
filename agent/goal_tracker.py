@@ -7,9 +7,15 @@ import re
 import threading
 from datetime import datetime
 
-import psycopg2
+try:
+    import psycopg2
+
+    HAS_PSYCOPG2 = True
+except ImportError:  # NOTE: postgres is optional
+    HAS_PSYCOPG2 = False
 
 from axon.config.settings import settings
+from axon.utils.health import service_status
 
 from .notifier import Notifier
 
@@ -17,15 +23,22 @@ from .notifier import Notifier
 class GoalTracker:
     def __init__(
         self,
-        db_uri: str = settings.database.postgres_uri,
+        db_uri: str | None = settings.database.postgres_uri,
         notifier: Notifier | None = None,
     ) -> None:
-        try:
-            self.conn = psycopg2.connect(db_uri)
-            self._ensure_table()
-        except psycopg2.OperationalError as e:
-            logging.error("goal-db", extra={"error": str(e)})
-            self.conn = None
+        self.conn = None
+        if not db_uri or not service_status.postgres:
+            logging.info("goal-db-disabled")
+        elif not HAS_PSYCOPG2:
+            raise RuntimeError("psycopg2 not installed; install axon[postgres]")
+        else:
+            try:
+                self.conn = psycopg2.connect(db_uri)
+                self._ensure_table()
+            except psycopg2.OperationalError as e:
+                logging.error("goal-db", extra={"error": str(e)})
+                service_status.postgres = False
+                self.conn = None
         self.notifier = notifier or Notifier()
         self._prompt_timer: threading.Timer | None = None
 

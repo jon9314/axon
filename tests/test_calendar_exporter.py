@@ -1,4 +1,6 @@
-from agent.calendar_exporter import CalendarExporter
+import pytest
+
+from agent.calendar_exporter import HAS_ICALENDAR, CalendarExporter
 
 
 class DummyMem:
@@ -15,6 +17,8 @@ class DummyMem:
 
 
 def test_export(tmp_path):
+    if not HAS_ICALENDAR:
+        pytest.skip("icalendar missing")
     exporter = CalendarExporter(DummyMem())
     data = exporter.export("t1")
     assert "BEGIN:VCALENDAR" in data

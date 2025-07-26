@@ -7,7 +7,13 @@ from collections.abc import Iterable
 from datetime import datetime, timedelta
 from typing import Protocol
 
-from icalendar import Calendar, Event
+try:
+    from icalendar import Calendar, Event
+
+    HAS_ICALENDAR = True
+except ImportError:  # NOTE: optional calendar export dependency
+    HAS_ICALENDAR = False
+    Calendar = Event = object  # type: ignore
 
 
 class MemoryLike(Protocol):
@@ -44,6 +50,8 @@ class CalendarExporter:
 
     def export(self, thread_id: str = "default_thread", path: str | None = None) -> str:
         """Return calendar data and optionally write it to ``path``."""
+        if not HAS_ICALENDAR:
+            raise RuntimeError("icalendar extra not installed")
         reminders = _reminders_from_memory(self.memory, thread_id)
         cal = Calendar()
         for item in reminders:

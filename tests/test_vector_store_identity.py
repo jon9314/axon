@@ -1,8 +1,13 @@
 from types import SimpleNamespace
 
-from qdrant_client.http import models
+import pytest
 
-from memory.vector_store import VectorStore
+from memory.vector_store import HAS_QDRANT, VectorStore
+
+if HAS_QDRANT:
+    from qdrant_client.http import models
+else:  # pragma: no cover - optional qdrant
+    models = SimpleNamespace(PayloadSchemaType=SimpleNamespace(KEYWORD=object))
 
 
 class DummyQdrantClient:
@@ -53,6 +58,8 @@ def make_store(dummy):
 
 
 def test_search_filters_by_identity():
+    if not HAS_QDRANT:
+        pytest.skip("qdrant-client missing")
     dummy = DummyQdrantClient()
     store = make_store(dummy)
     store.add_memory("col", "a1", [0.1], identity="alice")
@@ -67,6 +74,8 @@ def test_search_filters_by_identity():
 
 
 def test_hybrid_search_scores_adjusted():
+    if not HAS_QDRANT:
+        pytest.skip("qdrant-client missing")
     dummy = DummyQdrantClient()
     store = make_store(dummy)
     store.add_memory("col", "a1", [0.1], identity="alice")
