@@ -2,13 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from axon.utils.health import service_status
 from memory.vector_store import HAS_QDRANT, VectorStore
 
-pytestmark = pytest.mark.skipif(
-    not service_status.qdrant,
-    reason="Qdrant service unavailable; skipping vector-db tests",
-)
+pytestmark = pytest.mark.needs_qdrant  # NOTE: auto-skip via conftest
 
 if HAS_QDRANT:
     from qdrant_client.http import models

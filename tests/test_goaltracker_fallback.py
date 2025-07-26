@@ -6,7 +6,7 @@ def test_goaltracker_no_postgres(monkeypatch):
     monkeypatch.setattr(service_status, "postgres", False)
     tracker = GoalTracker(db_uri="postgresql://ignore")
     tracker.add_goal("t1", "do things")
-    tracker.detect_and_add_goal("t1", "I want to run")
+    assert not tracker.detect_and_add_goal("t1", "I want to run")  # NOTE: disabled
     assert tracker.list_goals("t1") == []
     assert tracker.list_deferred_goals("t1") == []
     tracker.complete_goal(1)

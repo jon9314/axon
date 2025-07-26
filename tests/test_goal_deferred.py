@@ -1,12 +1,11 @@
 import pytest
 
 from agent.goal_tracker import HAS_PSYCOPG2, GoalTracker
-from axon.utils.health import service_status
 
-pytestmark = pytest.mark.skipif(
-    not service_status.postgres or not HAS_PSYCOPG2,
-    reason="Postgres service unavailable; skipping DB-dependent tests",
-)
+pytestmark = pytest.mark.needs_postgres  # NOTE: auto-skip via conftest
+
+if not HAS_PSYCOPG2:
+    pytest.skip("psycopg2 missing", allow_module_level=True)
 
 
 class DummyCursor:

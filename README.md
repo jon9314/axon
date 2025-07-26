@@ -84,6 +84,10 @@ Ideas that sound vague ("someday I might...") are marked as **deferred** and
 trigger periodic reminder prompts. They can be listed via
 `/goals/{thread_id}/deferred`.
 
+<!-- NOTE: document optional Postgres and health endpoint -->
+Axon gracefully disables goal-tracking if Postgres isn’t available. Start
+Postgres to re-enable the feature. Use `GET /health` to inspect service status.
+
 ## Docker Compose
 
 The repository includes a `docker-compose.yml` for running Axon and its

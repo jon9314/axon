@@ -15,3 +15,22 @@ def test_backend_startup_warning(monkeypatch, caplog):
 
     importlib.reload(bm)
     assert any("unreachable" in r.message for r in caplog.records)
+
+
+def test_default_ports(monkeypatch):
+    created = []
+
+    class Dummy:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            pass
+
+    def fake_conn(addr, timeout=2):
+        created.append(addr)
+        return Dummy()
+
+    monkeypatch.setattr(health.socket, "create_connection", fake_conn)
+    assert health.check_service("mqtt://broker")
+    assert created[0] == ("broker", 1883)
