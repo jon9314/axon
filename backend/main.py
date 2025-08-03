@@ -173,7 +173,7 @@ async def list_mcp_tools():
 @app.get("/models")
 async def list_models():
     """Return available local models."""
-    return {"models": [settings.llm.default_local_model, "mock-model"]}
+    return {"models": [settings.llm.default_local_model, "z-ai/glm-4.5-air:free"]}
 
 
 @app.post("/sessions/login")
