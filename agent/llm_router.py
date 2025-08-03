@@ -1,4 +1,4 @@
-"""LLM router integrating Qwen-Agent."""
+"""LLM router integrating OpenRouter via Qwen-Agent."""
 
 from __future__ import annotations
 
@@ -15,12 +15,12 @@ from .response_shaper import ResponseShaper
 
 
 class LLMRouter:
-    """Route prompts through a local Qwen-Agent assistant."""
+    """Route prompts through an OpenRouter-backed Qwen-Agent assistant."""
 
     def __init__(self, model: str | None = None) -> None:
-        """Create the assistant using Qwen3 and registered tools."""
+        """Create the assistant using OpenRouter and registered tools."""
 
-        self.model = model or "Qwen/Qwen3-4B-Instruct"
+        self.model = model or "openrouter/horizon-beta"
         self.assistant: Assistant | None = None
 
     def _ensure_assistant(self, model: str) -> Assistant:

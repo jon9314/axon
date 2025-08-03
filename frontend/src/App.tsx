@@ -26,7 +26,7 @@ function App() {
   const [newTags, setNewTags] = useState('');
   const [cloudPrompt, setCloudPrompt] = useState<{model: string; prompt: string} | null>(null);
   const [pasteValue, setPasteValue] = useState('');
-  const [selectedModel, setSelectedModel] = useState('qwen3:8b');
+  const [selectedModel, setSelectedModel] = useState('openrouter/horizon-beta');
   const ws = useRef<WebSocket | null>(null);
   const sendMcp = (tool: string, args: Record<string, unknown>) => {
     if (ws.current?.readyState !== WebSocket.OPEN) return;
@@ -136,8 +136,8 @@ function App() {
             placeholder="Type your message..."
           />
           <select value={selectedModel} onChange={(e)=>setSelectedModel(e.target.value)}>
-            <option value="qwen3:8b">qwen3:8b</option>
-            <option value="mock-model">mock-model</option>
+            <option value="openrouter/horizon-beta">openrouter/horizon-beta</option>
+            <option value="z-ai/glm-4.5-air:free">z-ai/glm-4.5-air:free</option>
           </select>
           <button onClick={handleSendMessage}>Send</button>
           <button onClick={() => sendMcp('time', {command: 'now'})}>Time</button>
