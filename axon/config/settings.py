@@ -67,6 +67,7 @@ class LlmSettings(BaseModel):
     """LLM configuration."""
 
     default_local_model: str = "qwen3:8b"
+    model_server: str | None = None
     qwen_agent_generate_cfg: dict[str, Any] | None = None
 
 

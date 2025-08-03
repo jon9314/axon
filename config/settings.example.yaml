@@ -7,6 +7,7 @@ database:
 
 llm:
   default_local_model: "qwen3:8b"
+  model_server: "http://localhost:11434/v1"
   qwen_agent_generate_cfg:
     fncall_prompt_type: "nous"
 
