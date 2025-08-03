@@ -15,6 +15,7 @@ Example `settings.yaml` snippet:
 ```yaml
 llm:
   default_local_model: "mistral:7b"
+  model_server: "http://localhost:11434/v1"
 ```
 
 Restart the backend after changing settings so the new model is loaded.
@@ -37,6 +38,7 @@ Pass the prompt template through `generate_cfg` when creating the assistant.
 ```yaml
 llm:
   default_local_model: "qwen3:8b"
+  model_server: "http://localhost:11434/v1"  # point to your Ollama host
   qwen_agent_generate_cfg:
     fncall_prompt_type: "nous"
 ```

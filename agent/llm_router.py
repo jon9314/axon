@@ -27,9 +27,19 @@ class LLMRouter:
         """Return an assistant configured for the requested model."""
         if self.assistant is None or model != self.model:
             tool_names = list(TOOL_REGISTRY.keys())
+            llm_cfg: dict[str, Any] = {"model": model}
+            if settings.llm.model_server:
+                llm_cfg.update(
+                    {
+                        "model_type": "oai",
+                        "model_server": settings.llm.model_server,
+                    }
+                )
+            else:
+                llm_cfg["model_type"] = "transformers"
             self.assistant = Assistant(
                 function_list=tool_names,
-                llm={"model": model, "model_type": "transformers"},
+                llm=llm_cfg,
                 generate_cfg=settings.llm.qwen_agent_generate_cfg,
             )
             self.model = model
