@@ -23,15 +23,16 @@ class LLMRouter:
         self.model = model or "Qwen/Qwen3-4B-Instruct"
         self.assistant: Assistant | None = None
 
-    def _ensure_assistant(self) -> Assistant:
-        """Lazily create the Qwen-Agent assistant."""
-        if self.assistant is None:
+    def _ensure_assistant(self, model: str) -> Assistant:
+        """Return an assistant configured for the requested model."""
+        if self.assistant is None or model != self.model:
             tool_names = list(TOOL_REGISTRY.keys())
             self.assistant = Assistant(
                 function_list=tool_names,
-                llm={"model": self.model, "model_type": "transformers"},
+                llm={"model": model, "model_type": "transformers"},
                 generate_cfg=settings.llm.qwen_agent_generate_cfg,
             )
+            self.model = model
         return self.assistant
 
     def _needs_cloud(self, prompt: str) -> bool:
@@ -75,7 +76,7 @@ class LLMRouter:
         messages.append({"role": "user", "content": prompt})
 
         try:
-            assistant = self._ensure_assistant()
+            assistant = self._ensure_assistant(model)
             output = assistant.run_nonstream(messages)
             text = self._extract_text(output)
             if text:
