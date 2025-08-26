@@ -21,8 +21,9 @@ llm:
   model_server: "https://openrouter.ai/api/v1"
 ```
 
-Set the `OPENAI_API_KEY` environment variable with your OpenRouter API key
-before starting the backend.
+Set the `OPENROUTER_API_KEY` environment variable with your OpenRouter API key before starting the backend.
+
+The backend also exposes the free `z-ai/glm-4.5-air:free` model as a secondary option.
 
 The backend also exposes the free `z-ai/glm-4.5-air:free` model as a secondary
 option.
