@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 
 from .base import MemoryStore
@@ -63,14 +64,18 @@ class JSONFileMemoryStore(MemoryStore):
             raise KeyError(record_id)
         if rec.locked:
             raise ValueError("record locked")
+        updated_at_override = fields.get("updated_at")
+
         for k, v in fields.items():
+            if k == "updated_at":
+                continue
             if hasattr(rec, k):
                 setattr(rec, k, v)
             else:
                 if rec.metadata is None:
                     rec.metadata = {}
                 rec.metadata[k] = v
-        rec.updated_at = fields.get("updated_at", rec.updated_at)
+        rec.updated_at = updated_at_override or datetime.utcnow()
         self._save()
         return rec
 

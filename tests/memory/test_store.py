@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 
 from axon.memory import JSONFileMemoryStore, MemoryRecord, MemoryRepository, ReminderRecord
@@ -61,3 +62,14 @@ def test_unlock(tmp_path):
     assert store.get(rid).locked
     store.unlock(rid)
     assert not store.get(rid).locked
+
+
+def test_update_refreshes_timestamp(tmp_path):
+    store = JSONFileMemoryStore(str(tmp_path / "ts.json"))
+    repo = MemoryRepository(store)
+    rid = repo.remember_fact("initial")
+    before = repo.store.get(rid).updated_at
+    time.sleep(0.01)
+    repo.store.update(rid, content="updated")
+    after = repo.store.get(rid).updated_at
+    assert after > before
