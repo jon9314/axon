@@ -1,0 +1,6 @@
+name: file_writer
+version: "1.0"
+description: Write content to files with permission enforcement
+entrypoint: file_writer:FileWriterPlugin
+permissions:
+  - fs.write
