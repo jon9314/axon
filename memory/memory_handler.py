@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 
 from axon.memory import MemoryRepository
 
@@ -9,25 +9,60 @@ from axon.memory import MemoryRepository
 class MemoryHandler:
     """Compatibility wrapper over :class:`MemoryRepository`."""
 
-    def __init__(self) -> None:
+    def __init__(self, auto_timestamp: bool = True) -> None:
         self.repo = MemoryRepository()
+        self.auto_timestamp = auto_timestamp
+
+    def _get_timestamp(self) -> str | None:
+        """Get current timestamp from Time MCP if enabled."""
+        if not self.auto_timestamp:
+            return None
+
+        try:
+            from agent.mcp_router import mcp_router
+
+            if mcp_router.check_tool("time"):
+                result = mcp_router.call("time", {"command": "now"})
+                return result.get("timestamp")
+        except Exception:
+            # Gracefully degrade if MCP not available
+            from datetime import datetime
+
+            try:
+                from datetime import UTC  # type: ignore[attr-defined]
+
+                return datetime.now(UTC).isoformat()
+            except ImportError:
+                import datetime as dt
+
+                return dt.datetime.utcnow().isoformat() + "Z"
+        return None
 
     def add_fact(
         self,
         thread_id: str,
         key: str,
         value: str,
-        identity: Optional[str] = None,
-        domain: Optional[str] = None,
+        identity: str | None = None,
+        domain: str | None = None,
         tags: Iterable[str] | None = None,
     ) -> None:
-        metadata = {"identity": identity} if identity else None
+        metadata = {"identity": identity} if identity else {}
+
+        # Add timestamp to metadata
+        timestamp = self._get_timestamp()
+        if timestamp:
+            if metadata:
+                metadata["created_at"] = timestamp
+            else:
+                metadata = {"created_at": timestamp}
+
         self.repo.remember_fact(
             value,
             record_id=key,
             tags=list(tags) if tags else None,
             scope=domain or thread_id,
-            metadata=metadata,
+            metadata=metadata if metadata else None,
         )
 
     def get_fact(self, thread_id: str, key: str, include_identity: bool = False):
@@ -40,7 +75,7 @@ class MemoryHandler:
         return rec.content
 
     def list_facts(
-        self, thread_id: str, tag: Optional[str] = None, domain: Optional[str] = None
+        self, thread_id: str, tag: str | None = None, domain: str | None = None
     ) -> list[tuple[str, str, str | None, bool, list[str]]]:
         records = self.repo.store.search(
             "",
@@ -60,8 +95,8 @@ class MemoryHandler:
         thread_id: str,
         key: str,
         value: str,
-        identity: Optional[str] = None,
-        domain: Optional[str] = None,
+        identity: str | None = None,
+        domain: str | None = None,
         tags: Iterable[str] | None = None,
     ) -> None:
         update_fields: dict[str, Any] = {
@@ -78,7 +113,7 @@ class MemoryHandler:
         return self.repo.store.delete(key)
 
     def delete_facts(
-        self, thread_id: str, domain: Optional[str] = None, tag: Optional[str] = None
+        self, thread_id: str, domain: str | None = None, tag: str | None = None
     ) -> int:
         records = self.repo.store.search(
             "",

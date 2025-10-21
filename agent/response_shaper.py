@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 
 class ResponseShaper:
@@ -38,7 +37,7 @@ class ResponseShaper:
         "partner": "Hey there,",
     }
 
-    def __init__(self, max_length: Optional[int] = None) -> None:
+    def __init__(self, max_length: int | None = None) -> None:
         self.max_length = max_length
 
     def _apply_map(self, text: str, mapping: dict[str, str]) -> str:

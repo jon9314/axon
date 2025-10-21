@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 import subprocess
-from typing import Any, Optional
+from typing import Any
 
 import requests
 import yaml
@@ -32,7 +32,7 @@ class MCPRouter:
     def list_tools(self) -> list[str]:
         return list(self.tools.keys())
 
-    def get_tool(self, name: str) -> Optional[dict[str, Any]]:
+    def get_tool(self, name: str) -> dict[str, Any] | None:
         return self.tools.get(name)
 
     def check_tool(self, name: str) -> bool:

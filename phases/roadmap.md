@@ -73,12 +73,12 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] **Text2SQL + Antvis**: structured querying and visualization *(basic CSV query server implemented)*
 - [x] **WolframAlpha / Prolog / Logic MCPs** (optional advanced logic)
 
-### Phase 3 Additions (Planned)
-- [ ] Timestamp new memory entries via Time MCP
-- [ ] Sync markdown notes with Qdrant
-- [ ] Auto-commit patches via GitHub tooling
-- [ ] Capture documentation source URLs and show charts
-- [ ] Record MCP latency/failure metrics
+### Phase 3 Additions (✅ Complete)
+- [x] Timestamp new memory entries via Time MCP (automatic with fallback)
+- [x] Sync markdown notes with Qdrant (bidirectional with semantic search)
+- [x] Auto-commit patches via GitHub tooling (feature branches, auto-stage)
+- [x] Capture documentation source URLs and show charts (pie, bar, timeline)
+- [x] Record MCP latency/failure metrics (health monitoring, percentiles, reports)
 
 ---
 

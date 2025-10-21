@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import secrets
-from typing import Optional
 
 
 class SessionTracker:
@@ -17,7 +16,7 @@ class SessionTracker:
         self._sessions[token] = (identity, tid)
         return token, tid
 
-    def resolve(self, token: str) -> Optional[tuple[str, str]]:
+    def resolve(self, token: str) -> tuple[str, str] | None:
         """Return the identity and thread for a token if it exists."""
         return self._sessions.get(token)
 

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -30,7 +30,7 @@ class SpeakerProfile(BaseModel):
     identity: str
     embedding: list[float]
     num_samples: int = 1
-    last_updated: Optional[str] = None
+    last_updated: str | None = None
 
 
 class SpeakerEmbeddingManager:
@@ -168,7 +168,7 @@ class SpeakerEmbeddingManager:
 
     def identify_speaker(
         self, audio_data: bytes, threshold: float = 0.7
-    ) -> tuple[Optional[str], float]:
+    ) -> tuple[str | None, float]:
         """Identify speaker from audio sample.
 
         Args:
@@ -183,7 +183,7 @@ class SpeakerEmbeddingManager:
 
         query_embedding = self.extract_embedding(audio_data)
 
-        best_match: Optional[str] = None
+        best_match: str | None = None
         best_similarity = 0.0
 
         for identity, profile in self.profiles.items():

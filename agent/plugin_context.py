@@ -1,7 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from agent.goal_tracker import GoalTracker
 from axon.config.settings import settings
@@ -21,8 +20,8 @@ class PluginContext:
         self,
         key: str,
         value: str,
-        identity: Optional[str] = None,
-        domain: Optional[str] = None,
+        identity: str | None = None,
+        domain: str | None = None,
         tags: Iterable[str] | None = None,
     ) -> None:
         """Store a fact in Axon's memory."""
@@ -38,7 +37,7 @@ class PluginContext:
     def add_goal(
         self,
         text: str,
-        identity: Optional[str] = None,
+        identity: str | None = None,
         priority: int = 0,
         deadline: str | None = None,
     ) -> None:

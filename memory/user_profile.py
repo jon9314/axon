@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 import yaml
 
@@ -20,9 +19,9 @@ class UserProfileManager:
     def set_profile(
         self,
         identity: str,
-        persona: Optional[str] = None,
-        tone: Optional[str] = None,
-        email: Optional[str] = None,
+        persona: str | None = None,
+        tone: str | None = None,
+        email: str | None = None,
     ) -> None:
         record = ProfileRecord(
             id=identity, scope=identity, fields={"persona": persona, "tone": tone, "email": email}
@@ -33,7 +32,7 @@ class UserProfileManager:
         else:
             self.repository.store.put(record)
 
-    def get_profile(self, identity: str) -> Optional[dict]:
+    def get_profile(self, identity: str) -> dict | None:
         rec = self.repository.store.get(identity)
         if isinstance(rec, ProfileRecord):
             data = rec.fields.copy()
