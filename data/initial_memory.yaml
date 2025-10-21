@@ -1,14 +1,74 @@
 facts:
+  # Personal domain - user preferences and info
   - thread_id: default_thread
     key: user_name
     value: Alex
     identity: default_user
     domain: personal
   - thread_id: default_thread
+    key: preferred_editor
+    value: VSCode
+    identity: default_user
+    domain: personal
+  - thread_id: default_thread
+    key: timezone
+    value: America/New_York
+    identity: default_user
+    domain: personal
+
+  # Project domain - work-related information
+  - thread_id: default_thread
     key: project_codename
     value: Frankie
     identity: default_user
     domain: project
+  - thread_id: default_thread
+    key: sprint_end_date
+    value: 2025-11-01
+    identity: default_user
+    domain: project
+  - thread_id: default_thread
+    key: tech_stack
+    value: Python, FastAPI, React, Qdrant
+    identity: default_user
+    domain: project
+
+  # Health domain - fitness and wellbeing
+  - thread_id: default_thread
+    key: daily_step_goal
+    value: "10000"
+    identity: default_user
+    domain: health
+  - thread_id: default_thread
+    key: water_intake_target
+    value: 8 glasses
+    identity: default_user
+    domain: health
+
+  # Finance domain - money management
+  - thread_id: default_thread
+    key: monthly_budget
+    value: "$3000"
+    identity: default_user
+    domain: finance
+  - thread_id: default_thread
+    key: savings_goal
+    value: "$20000 by end of year"
+    identity: default_user
+    domain: finance
+
+  # Learning domain - educational goals
+  - thread_id: default_thread
+    key: current_course
+    value: Advanced Machine Learning
+    identity: default_user
+    domain: learning
+  - thread_id: default_thread
+    key: books_reading
+    value: Designing Data-Intensive Applications
+    identity: default_user
+    domain: learning
+
 mcp_messages:
   - mcp_protocol_version: "1.0"
     tool_name: note

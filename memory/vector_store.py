@@ -151,15 +151,72 @@ class VectorStore:
         llm_confidence: float,
         limit: int = 5,
         identity: str | None = None,
+        vector_weight: float = 0.7,
+        confidence_weight: float = 0.3,
+        diversity_boost: bool = True,
     ) -> list[models.ScoredPoint]:
-        """Return search results weighted by an LLM confidence score."""
+        """Return search results with improved hybrid scoring.
+
+        Combines vector similarity with LLM confidence using configurable weights
+        and optional diversity boosting.
+
+        Args:
+            collection_name: Name of the Qdrant collection
+            query_vector: Query embedding vector
+            llm_confidence: Confidence score from LLM (0.0 to 1.0)
+            limit: Maximum number of results
+            identity: Optional identity filter
+            vector_weight: Weight for vector similarity (default 0.7)
+            confidence_weight: Weight for LLM confidence (default 0.3)
+            diversity_boost: Apply diversity penalty to very similar results
+
+        Returns:
+            List of scored points with hybrid scores
+        """
+        # Fetch more results than needed if diversity boosting is enabled
+        fetch_limit = limit * 2 if diversity_boost else limit
+
         results = self.search_memory(
             collection_name,
             query_vector,
-            limit=limit,
+            limit=fetch_limit,
             identity=identity,
         )
+
+        if not results:
+            return []
+
+        # Normalize weights to sum to 1.0
+        total_weight = vector_weight + confidence_weight
+        norm_vector_weight = vector_weight / total_weight
+        norm_confidence_weight = confidence_weight / total_weight
+
+        # Apply hybrid scoring
+        scored_results = []
+        seen_scores = []
+
         for r in results:
-            if hasattr(r, "score"):
-                r.score = 0.5 * r.score + 0.5 * llm_confidence
-        return results
+            if not hasattr(r, "score"):
+                continue
+
+            # Base hybrid score
+            vector_score = r.score
+            hybrid_score = (norm_vector_weight * vector_score) + (
+                norm_confidence_weight * llm_confidence
+            )
+
+            # Apply diversity boost if enabled
+            if diversity_boost and seen_scores:
+                # Penalize results very similar to already-selected ones
+                max_similarity = max(seen_scores)
+                if vector_score > 0.95 * max_similarity:
+                    # Slight penalty for very similar results
+                    hybrid_score *= 0.95
+
+            r.score = hybrid_score
+            scored_results.append(r)
+            seen_scores.append(vector_score)
+
+        # Sort by hybrid score and return top results
+        scored_results.sort(key=lambda x: x.score, reverse=True)
+        return scored_results[:limit]
