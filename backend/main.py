@@ -19,9 +19,12 @@ from fastapi import (
 )
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from agent.doc_source_tracker import DocSourceTracker
+from agent.github_auto_commit import GitHubAutoCommit
 from agent.goal_tracker import GoalTracker
 from agent.llm_router import LLMRouter
 from agent.mcp_handler import MCPHandler
+from agent.mcp_metrics import MCPMetrics
 from agent.mcp_router import mcp_router
 from agent.notifier import Notifier
 from agent.pasteback_handler import PastebackHandler
@@ -30,6 +33,7 @@ from agent.reminder import MemoryLike, ReminderManager
 from agent.session_tracker import SessionTracker
 from axon.config.settings import settings
 from axon.utils.health import check_service, service_status
+from memory.markdown_sync import MarkdownQdrantSync
 from memory.memory_handler import MemoryHandler
 from memory.preload import preload
 from memory.speaker_embedding import SpeakerEmbeddingManager
@@ -142,6 +146,10 @@ profile_manager = UserProfileManager()
 reminder_manager = ReminderManager(Notifier(), cast(MemoryLike, memory_handler))
 session_tracker = SessionTracker()
 speaker_manager = SpeakerEmbeddingManager()
+mcp_metrics = MCPMetrics()
+doc_tracker = DocSourceTracker()
+github_auto_commit = GitHubAutoCommit(mcp_router=mcp_router)
+markdown_sync = MarkdownQdrantSync()
 
 
 @app.on_event("startup")
@@ -413,7 +421,7 @@ async def list_plugins():
     loader.discover()
 
     plugins_info = []
-    for name, manifest in loader.manifests.items():
+    for _name, manifest in loader.manifests.items():
         plugins_info.append(
             {
                 "name": manifest.name,
@@ -451,7 +459,7 @@ async def get_plugin_info(name: str):
     }
 
     if plugin:
-        info["description_details"] = plugin.describe()
+        info["description_details"] = plugin.describe()  # type: ignore[assignment]
 
     return info
 
@@ -471,9 +479,9 @@ async def execute_plugin(name: str, data: dict):
         result = loader.execute(name, data)
         return {"status": "success", "result": result}
     except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        raise HTTPException(status_code=403, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/speakers/register")
@@ -495,7 +503,7 @@ async def register_speaker(identity: str, audio_data: str):
             "num_samples": profile.num_samples,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.post("/speakers/identify")
@@ -513,7 +521,7 @@ async def identify_speaker(audio_data: str, threshold: float = 0.7):
         identity, confidence = speaker_manager.identify_speaker(audio_bytes, threshold)
         return {"identity": identity, "confidence": confidence}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.get("/speakers")
@@ -530,6 +538,127 @@ async def delete_speaker(identity: str):
     if not removed:
         raise HTTPException(status_code=404, detail="Speaker not found")
     return {"status": "success", "identity": identity}
+
+
+@app.get("/mcp/metrics")
+async def get_mcp_metrics():
+    """Get MCP server performance metrics."""
+    return mcp_metrics.get_all_servers_stats()
+
+
+@app.get("/mcp/metrics/{server_name}")
+async def get_server_metrics(server_name: str):
+    """Get metrics for a specific MCP server."""
+    stats = mcp_metrics.get_server_stats(server_name)
+    if stats.get("total_calls", 0) == 0:
+        raise HTTPException(status_code=404, detail="Server not found or no metrics")
+    return stats
+
+
+@app.get("/mcp/health")
+async def get_mcp_health():
+    """Get overall MCP health summary."""
+    return mcp_metrics.get_health_summary()
+
+
+@app.post("/mcp/metrics/export")
+async def export_mcp_metrics(output_path: str = "data/mcp_metrics_report.md"):
+    """Export MCP metrics as markdown report."""
+    mcp_metrics.export_metrics_report(output_path)
+    return {"status": "success", "path": output_path}
+
+
+@app.get("/docs/sources")
+async def list_doc_sources(category: str | None = None):
+    """List tracked documentation sources."""
+    sources = doc_tracker.list_sources(category=category)
+    return {"sources": sources}
+
+
+@app.post("/docs/sources/track")
+async def track_doc_source(
+    url: str, title: str | None = None, category: str | None = None, metadata: dict | None = None
+):
+    """Track a documentation source URL."""
+    doc_tracker.track_source(url, title, category, metadata)
+    return {"status": "success", "url": url}
+
+
+@app.get("/docs/sources/stats")
+async def get_doc_stats():
+    """Get documentation source statistics."""
+    return doc_tracker.get_statistics()
+
+
+@app.get("/docs/sources/chart/{chart_type}")
+async def get_doc_chart(chart_type: str, limit: int = 10):
+    """Get chart data for documentation sources."""
+    return doc_tracker.generate_chart_data(chart_type, limit)
+
+
+@app.post("/docs/sources/export")
+async def export_doc_report(output_path: str = "data/doc_sources_report.md"):
+    """Export documentation sources as markdown report."""
+    doc_tracker.export_markdown_report(output_path)
+    return {"status": "success", "path": output_path}
+
+
+@app.post("/markdown/sync/to-qdrant")
+async def sync_markdown_to_qdrant(note_name: str | None = None):
+    """Sync markdown notes to Qdrant vector store."""
+    count = markdown_sync.sync_markdown_to_qdrant(note_name)
+    return {"status": "success", "synced_count": count}
+
+
+@app.post("/markdown/sync/to-markdown")
+async def sync_qdrant_to_markdown(identity: str | None = None):
+    """Sync Qdrant vectors to markdown files."""
+    count = markdown_sync.sync_qdrant_to_markdown(identity)
+    return {"status": "success", "exported_count": count}
+
+
+@app.get("/markdown/sync/status")
+async def get_sync_status():
+    """Get markdown-Qdrant sync status."""
+    return markdown_sync.get_sync_status()
+
+
+@app.post("/markdown/sync/auto")
+async def auto_sync_markdown():
+    """Automatically sync in both directions."""
+    return markdown_sync.auto_sync()
+
+
+@app.get("/markdown/search")
+async def search_markdown_notes(query: str, limit: int = 5):
+    """Search markdown notes semantically."""
+    results = markdown_sync.search_notes(query, limit)
+    return {"query": query, "results": results}
+
+
+@app.post("/github/auto-commit")
+async def create_auto_commit(files: list[str], message: str, branch: str | None = None):
+    """Auto-commit files via GitHub MCP."""
+    result = github_auto_commit.create_patch(files, message, branch)
+    if result["status"] == "error":
+        raise HTTPException(status_code=500, detail=result["message"])
+    return result
+
+
+@app.post("/github/commit-diff")
+async def commit_current_diff(message: str, auto_stage: bool = True):
+    """Commit current diff via GitHub MCP."""
+    result = github_auto_commit.create_patch_from_diff(message, auto_stage)
+    if result["status"] == "error":
+        raise HTTPException(status_code=500, detail=result["message"])
+    return result
+
+
+@app.post("/github/auto-commit-memory")
+async def auto_commit_memory(frequency: str = "daily"):
+    """Auto-commit memory store changes."""
+    result = github_auto_commit.auto_commit_memory_changes(frequency=frequency)
+    return result
 
 
 @app.websocket("/ws/chat")

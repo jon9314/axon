@@ -193,7 +193,7 @@ class VectorStore:
 
         # Apply hybrid scoring
         scored_results = []
-        seen_scores = []
+        seen_scores: list[float] = []
 
         for r in results:
             if not hasattr(r, "score"):

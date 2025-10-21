@@ -70,12 +70,12 @@ class TestDomainAPI:
         """Should return statistics per domain."""
         # Mock repository records with different scopes
         records = []
-        for i in range(3):
+        for _i in range(3):
             rec = MagicMock()
             rec.scope = "personal"
             records.append(rec)
 
-        for i in range(2):
+        for _i in range(2):
             rec = MagicMock()
             rec.scope = "project"
             records.append(rec)

@@ -147,11 +147,7 @@ def tui(
     identity: str = "tui_user",
 ) -> None:
     """Enhanced text-based UI with agent integration and memory display."""
-    from rich.layout import Layout
-    from rich.live import Live
-    from rich.panel import Panel
     from rich.table import Table
-    from rich.text import Text
 
     from agent.llm_router import LLMRouter
 
@@ -164,7 +160,7 @@ def tui(
 
     def show_memory() -> None:
         """Display current memory entries."""
-        facts = cm.memory.list_facts(thread_id)
+        facts = cm.memory_handler.list_facts(thread_id)
         if not facts:
             console.print("[yellow]No memory entries found.[/yellow]")
             return
@@ -173,7 +169,7 @@ def tui(
         table.add_column("Value", style="green")
         table.add_column("Identity", style="blue")
         table.add_column("Locked", style="red")
-        for key, value, ident, locked, tags in facts:
+        for key, value, ident, locked, _tags in facts:
             table.add_row(
                 key,
                 value[:50] + ("..." if len(value) > 50 else ""),
@@ -197,7 +193,7 @@ def tui(
             table.add_column("Text", style="green")
             table.add_column("Status", style="blue")
             table.add_column("Priority", style="magenta")
-            for g_id, text, done, ident, deferred, priority, deadline in goals:
+            for g_id, text, done, _ident, deferred, priority, _deadline in goals:
                 status = "✓ Done" if done else ("⏸ Deferred" if deferred else "⏳ Active")
                 table.add_row(str(g_id), text[:40], status, str(priority or "-"))
             console.print(table)

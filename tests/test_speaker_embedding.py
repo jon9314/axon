@@ -92,7 +92,6 @@ class TestSpeakerEmbedding:
     def test_register_speaker_replace(self, manager, sample_audio):
         """Should replace profile when replace=True."""
         manager.register_speaker("alice", sample_audio["alice"])
-        profile1_samples = manager.profiles["alice"].num_samples
 
         # Register with replace
         new_audio = b"completely_different_audio" * 100

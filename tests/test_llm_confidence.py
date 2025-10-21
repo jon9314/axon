@@ -1,6 +1,5 @@
 """Tests for LLM confidence calculation."""
 
-import pytest
 
 from agent.llm_router import LLMRouter
 
