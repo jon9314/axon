@@ -48,13 +48,13 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] Manual note tagging + identity recognition
 - [x] Add support for CLI input memory injection
 
-### Phase 2 Improvements (Planned)
-- [ ] Domain scoping in memory tables and API
+### Phase 2 Improvements (✅ Complete)
+- [x] Domain scoping in memory tables and API (list domains, domain stats endpoints)
 - [x] Mass deletion endpoints and CLI plugin reload
-- [ ] Permission scoping for plugins
+- [x] Permission scoping for plugins (runtime enforcement, deny list, API endpoints)
 - [x] Goal priority and deadline fields
 - [x] Periodic prompts for deferred goals
-- [ ] Optional speaker-embedding logic
+- [x] Optional speaker-embedding logic (voice recognition with embeddings)
 
 ---
 

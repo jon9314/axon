@@ -116,6 +116,7 @@ Install them via `pip install pyperclip keyboard` if missing.
 ## Documentation
 
 - [docs/phase1_features.md](docs/phase1_features.md) describes Phase 1 enhancements (TUI, confidence metrics, hybrid scoring, domains).
+- [docs/phase2_features.md](docs/phase2_features.md) describes Phase 2 enhancements (domain scoping, permission enforcement, speaker recognition).
 - [docs/plugins.md](docs/plugins.md) explains how to create new plugins.
 - [docs/mcp_setup.md](docs/mcp_setup.md) covers running the MCP helper services.
 - [docs/models.md](docs/models.md) shows how to change the default model.
@@ -138,7 +139,9 @@ reasoning enabled and how to pass the recommended `generate_cfg` settings.
 
 ## Roadmap progress
 
-**Phase 1 is now fully complete**, including all core features and enhancements (TUI, hybrid scoring, confidence metrics, domain-aware memory, rate limiting, and model selection).
+**Phase 1 and Phase 2 are now fully complete**:
+- **Phase 1**: TUI, hybrid scoring, confidence metrics, domain-aware memory, rate limiting, model selection
+- **Phase 2**: Domain scoping API, permission enforcement, speaker recognition
 
 Phases 0 through 5 core features are complete. See [phases/roadmap.md](phases/roadmap.md) for the latest status of each phase and planned improvements.
 

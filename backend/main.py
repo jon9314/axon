@@ -32,6 +32,7 @@ from axon.config.settings import settings
 from axon.utils.health import check_service, service_status
 from memory.memory_handler import MemoryHandler
 from memory.preload import preload
+from memory.speaker_embedding import SpeakerEmbeddingManager
 from memory.user_profile import UserProfileManager
 
 # --- NEW: Configure Logging ---
@@ -140,6 +141,7 @@ pasteback_handler = PastebackHandler(memory_handler)
 profile_manager = UserProfileManager()
 reminder_manager = ReminderManager(Notifier(), cast(MemoryLike, memory_handler))
 session_tracker = SessionTracker()
+speaker_manager = SpeakerEmbeddingManager()
 
 
 @app.on_event("startup")
@@ -280,6 +282,42 @@ async def lock_memory(thread_id: str, key: str, locked: bool = True):
     return {"locked": changed}
 
 
+@app.get("/domains/{thread_id}")
+async def list_domains(thread_id: str):
+    """List all unique domains used in a thread."""
+    facts = memory_handler.list_facts(thread_id)
+    domains = set()
+    for _, _, _, _, tags in facts:
+        # Extract domain from tags if present
+        for tag in tags:
+            if tag.startswith("domain:"):
+                domains.add(tag.split(":", 1)[1])
+    # Also check the scope field via repository
+    all_records = memory_handler.repo.store.search("", scope=thread_id)
+    for rec in all_records:
+        if hasattr(rec, "scope") and rec.scope and rec.scope != thread_id:
+            domains.add(rec.scope)
+    return {"domains": sorted(domains)}
+
+
+@app.get("/domains/{thread_id}/stats")
+async def domain_stats(thread_id: str):
+    """Get statistics per domain for a thread."""
+    from collections import defaultdict
+
+    stats: dict[str, int] = defaultdict(int)
+    all_records = memory_handler.repo.store.search("")
+
+    for rec in all_records:
+        scope = getattr(rec, "scope", None)
+        if scope:
+            stats[scope] += 1
+
+    return {
+        "domains": [{"name": domain, "count": count} for domain, count in sorted(stats.items())]
+    }
+
+
 @app.post("/reminders/{thread_id}")
 async def add_reminder(thread_id: str, message: str, delay: int = 60):
     key = reminder_manager.schedule(message, delay, thread_id)
@@ -364,6 +402,134 @@ async def set_profile(
 ):
     profile_manager.set_profile(identity, persona=persona, tone=tone, email=email)
     return {"status": "ok"}
+
+
+@app.get("/plugins")
+async def list_plugins():
+    """List all loaded plugins with their permissions and status."""
+    from axon.plugins.loader import PluginLoader
+
+    loader = PluginLoader()
+    loader.discover()
+
+    plugins_info = []
+    for name, manifest in loader.manifests.items():
+        plugins_info.append(
+            {
+                "name": manifest.name,
+                "version": manifest.version,
+                "description": manifest.description,
+                "permissions": [p.value for p in manifest.permissions],
+                "entrypoint": manifest.entrypoint,
+            }
+        )
+    return {"plugins": plugins_info}
+
+
+@app.get("/plugins/{name}")
+async def get_plugin_info(name: str):
+    """Get detailed information about a specific plugin."""
+    from axon.plugins.loader import PluginLoader
+
+    loader = PluginLoader()
+    loader.discover()
+
+    if name not in loader.manifests:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+
+    manifest = loader.manifests[name]
+    plugin = loader.plugins.get(name)
+
+    info = {
+        "name": manifest.name,
+        "version": manifest.version,
+        "description": manifest.description,
+        "permissions": [p.value for p in manifest.permissions],
+        "entrypoint": manifest.entrypoint,
+        "config_schema": manifest.config_schema,
+        "loaded": plugin is not None,
+    }
+
+    if plugin:
+        info["description_details"] = plugin.describe()
+
+    return info
+
+
+@app.post("/plugins/{name}/execute")
+async def execute_plugin(name: str, data: dict):
+    """Execute a plugin with given data."""
+    from axon.plugins.loader import PluginLoader
+
+    loader = PluginLoader()
+    loader.discover()
+
+    if name not in loader.plugins:
+        raise HTTPException(status_code=404, detail="Plugin not found or not loaded")
+
+    try:
+        result = loader.execute(name, data)
+        return {"status": "success", "result": result}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/speakers/register")
+async def register_speaker(identity: str, audio_data: str):
+    """Register a speaker voice profile.
+
+    Args:
+        identity: Speaker identity
+        audio_data: Base64-encoded audio data
+    """
+    import base64
+
+    try:
+        audio_bytes = base64.b64decode(audio_data)
+        profile = speaker_manager.register_speaker(identity, audio_bytes)
+        return {
+            "status": "success",
+            "identity": profile.identity,
+            "num_samples": profile.num_samples,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/speakers/identify")
+async def identify_speaker(audio_data: str, threshold: float = 0.7):
+    """Identify a speaker from audio sample.
+
+    Args:
+        audio_data: Base64-encoded audio data
+        threshold: Minimum similarity threshold (0.0 to 1.0)
+    """
+    import base64
+
+    try:
+        audio_bytes = base64.b64decode(audio_data)
+        identity, confidence = speaker_manager.identify_speaker(audio_bytes, threshold)
+        return {"identity": identity, "confidence": confidence}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/speakers")
+async def list_speakers():
+    """List all registered speakers."""
+    speakers = speaker_manager.list_speakers()
+    return {"speakers": speakers}
+
+
+@app.delete("/speakers/{identity}")
+async def delete_speaker(identity: str):
+    """Remove a speaker profile."""
+    removed = speaker_manager.remove_speaker(identity)
+    if not removed:
+        raise HTTPException(status_code=404, detail="Speaker not found")
+    return {"status": "success", "identity": identity}
 
 
 @app.websocket("/ws/chat")
