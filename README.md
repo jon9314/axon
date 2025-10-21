@@ -115,6 +115,7 @@ Install them via `pip install pyperclip keyboard` if missing.
 
 ## Documentation
 
+- [docs/phase1_features.md](docs/phase1_features.md) describes Phase 1 enhancements (TUI, confidence metrics, hybrid scoring, domains).
 - [docs/plugins.md](docs/plugins.md) explains how to create new plugins.
 - [docs/mcp_setup.md](docs/mcp_setup.md) covers running the MCP helper services.
 - [docs/models.md](docs/models.md) shows how to change the default model.
@@ -137,7 +138,9 @@ reasoning enabled and how to pass the recommended `generate_cfg` settings.
 
 ## Roadmap progress
 
-Phases 0 through 4 are complete, including manual cloud prompting and calendar export features. See [phases/roadmap.md](phases/roadmap.md) for the latest status of each phase.
+**Phase 1 is now fully complete**, including all core features and enhancements (TUI, hybrid scoring, confidence metrics, domain-aware memory, rate limiting, and model selection).
+
+Phases 0 through 5 core features are complete. See [phases/roadmap.md](phases/roadmap.md) for the latest status of each phase and planned improvements.
 
 
 ## License

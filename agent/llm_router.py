@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from typing import Any
 
@@ -62,6 +63,59 @@ class LLMRouter:
             return (last.get("content") or "").strip()
         return (getattr(last, "content", "") or "").strip()
 
+    def calculate_confidence(self, response: str, prompt: str) -> float:
+        """Calculate confidence score based on response quality indicators.
+
+        Args:
+            response: The LLM's response text
+            prompt: The original user prompt
+
+        Returns:
+            Confidence score between 0.0 and 1.0
+        """
+        if not response or not response.strip():
+            return 0.0
+
+        confidence = 0.5  # Base confidence
+
+        # Increase confidence for detailed responses
+        if len(response) > 100:
+            confidence += 0.1
+        if len(response) > 300:
+            confidence += 0.1
+
+        # Decrease for vague/uncertain language
+        uncertain_phrases = [
+            "i'm not sure",
+            "i don't know",
+            "maybe",
+            "perhaps",
+            "i think",
+            "possibly",
+            "might be",
+        ]
+        lower_response = response.lower()
+        uncertainty_count = sum(1 for phrase in uncertain_phrases if phrase in lower_response)
+        confidence -= uncertainty_count * 0.1
+
+        # Increase for structured content (lists, code, etc.)
+        if re.search(r"(\n-|\n\d+\.|\n\*|```)", response):
+            confidence += 0.15
+
+        # Decrease for error messages or fallback indicators
+        if "sorry" in lower_response or "error" in lower_response:
+            confidence -= 0.2
+
+        # Increase if response appears to directly address the prompt
+        # Simple heuristic: check if key words from prompt appear in response
+        prompt_words = set(re.findall(r"\w{4,}", prompt.lower()))
+        response_words = set(re.findall(r"\w{4,}", lower_response))
+        overlap_ratio = len(prompt_words & response_words) / max(len(prompt_words), 1)
+        confidence += overlap_ratio * 0.2
+
+        # Clamp to valid range
+        return max(0.0, min(1.0, confidence))
+
     def get_response(
         self,
         prompt: str,
@@ -99,3 +153,27 @@ class LLMRouter:
                 reason="Local model call failed; please use a cloud model.",
             )
             return to_json(fallback)
+
+    def get_response_with_confidence(
+        self,
+        prompt: str,
+        model: str,
+        persona: str | None = None,
+        tone: str | None = None,
+        history: list[dict[str, str]] | None = None,
+    ) -> tuple[str, float]:
+        """Return the assistant reply and confidence score.
+
+        Args:
+            prompt: User's input prompt
+            model: Model identifier to use
+            persona: Optional persona setting
+            tone: Optional tone setting
+            history: Optional conversation history
+
+        Returns:
+            Tuple of (response_text, confidence_score)
+        """
+        response = self.get_response(prompt, model, persona, tone, history)
+        confidence = self.calculate_confidence(response, prompt)
+        return response, confidence

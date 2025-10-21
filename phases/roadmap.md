@@ -28,13 +28,13 @@ This roadmap outlines the development path for **Axon**, a modular, local-first 
 - [x] Docker Compose: Postgres + Qdrant + backend + frontend
 - [x] CI: GitHub Actions with mypy + ruff checks
 
-### Phase 1 Enhancements (Planned)
-- [ ] TUI-based CLI interface
-- [ ] Hybrid vector scoring and LLM confidence metrics
-- [ ] `mcp_mode` setting and JSON traffic logs
-- [ ] Domain-aware preload entries
-- [ ] Backend rate limiting and optional auth
-- [ ] Model selector dropdown in the UI
+### Phase 1 Enhancements (✅ Complete)
+- [x] TUI-based CLI interface with agent integration and memory/goal display
+- [x] Hybrid vector scoring and LLM confidence metrics
+- [x] `mcp_mode` setting and JSON traffic logs
+- [x] Domain-aware preload entries (personal, project, health, finance, learning)
+- [x] Backend rate limiting and optional auth (with Redis fallback)
+- [x] Model selector dropdown in the UI
 
 ---
 

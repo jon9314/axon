@@ -142,23 +142,98 @@ def cli():
 
 
 @app.command()
-def tui() -> None:
-    """Simple text-based UI using Rich."""
+def tui(
+    thread_id: str = "tui_thread",
+    identity: str = "tui_user",
+) -> None:
+    """Enhanced text-based UI with agent integration and memory display."""
+    from rich.layout import Layout
+    from rich.live import Live
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich.text import Text
+
+    from agent.llm_router import LLMRouter
+
     console = Console()
-    console.print("[bold magenta]Axon TUI mode. Type 'quit' to exit.[/bold magenta]")
+    console.print("[bold magenta]Axon TUI mode. Commands: /memory, /goals, /quit[/bold magenta]")
+
     plugin_loader.discover()
+    cm = ContextManager(thread_id=thread_id, identity=identity)
+    llm_router = LLMRouter()
+
+    def show_memory() -> None:
+        """Display current memory entries."""
+        facts = cm.memory.list_facts(thread_id)
+        if not facts:
+            console.print("[yellow]No memory entries found.[/yellow]")
+            return
+        table = Table(title="Memory Entries")
+        table.add_column("Key", style="cyan")
+        table.add_column("Value", style="green")
+        table.add_column("Identity", style="blue")
+        table.add_column("Locked", style="red")
+        for key, value, ident, locked, tags in facts:
+            table.add_row(
+                key,
+                value[:50] + ("..." if len(value) > 50 else ""),
+                ident or "-",
+                "🔒" if locked else "✓",
+            )
+        console.print(table)
+
+    def show_goals() -> None:
+        """Display current goals if available."""
+        try:
+            from agent.goal_tracker import GoalTracker
+
+            gt = GoalTracker(db_uri=get_settings().database.postgres_uri)
+            goals = gt.list_goals(thread_id)
+            if not goals:
+                console.print("[yellow]No goals found.[/yellow]")
+                return
+            table = Table(title="Goals")
+            table.add_column("ID", style="cyan")
+            table.add_column("Text", style="green")
+            table.add_column("Status", style="blue")
+            table.add_column("Priority", style="magenta")
+            for g_id, text, done, ident, deferred, priority, deadline in goals:
+                status = "✓ Done" if done else ("⏸ Deferred" if deferred else "⏳ Active")
+                table.add_row(str(g_id), text[:40], status, str(priority or "-"))
+            console.print(table)
+        except Exception as e:
+            console.print(f"[red]Could not load goals: {e}[/red]")
+
     while True:
         try:
             user_input = Prompt.ask("[cyan]You[/cyan]")
         except (EOFError, KeyboardInterrupt):
             break
-        if user_input.lower() in {"quit", "exit"}:
+
+        if user_input.lower() in {"/quit", "/exit", "quit", "exit"}:
             break
-        if user_input in plugin_loader.plugins:
+        elif user_input.lower() == "/memory":
+            show_memory()
+        elif user_input.lower() == "/goals":
+            show_goals()
+        elif user_input in plugin_loader.plugins:
             result = plugin_loader.execute(user_input, {})
             console.print(f"[green]Plugin {user_input}:[/green] {result}")
         else:
-            console.print(f"[yellow]Agent[/yellow]: I would process '{user_input}' now.")
+            # Process through LLM with profile support
+            profile = profile_manager.get_profile(identity)
+            persona = profile.get("persona") if profile else None
+            tone = profile.get("tone") if profile else None
+
+            with console.status("[yellow]Thinking...[/yellow]"):
+                response = llm_router.get_response(
+                    user_input,
+                    model=get_settings().llm.default_local_model,
+                    persona=persona,
+                    tone=tone,
+                )
+
+            console.print(f"[yellow]Axon[/yellow]: {response}")
 
 
 @app.command()
