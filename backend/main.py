@@ -19,9 +19,12 @@ from fastapi import (
 )
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from agent.audio_notifier import TTSNotificationService
+from agent.date_parser import NaturalDateParser
 from agent.doc_source_tracker import DocSourceTracker
 from agent.github_auto_commit import GitHubAutoCommit
 from agent.goal_tracker import GoalTracker
+from agent.hosted_proxy import HostedProxyClient
 from agent.llm_router import LLMRouter
 from agent.mcp_handler import MCPHandler
 from agent.mcp_metrics import MCPMetrics
@@ -150,6 +153,11 @@ mcp_metrics = MCPMetrics()
 doc_tracker = DocSourceTracker()
 github_auto_commit = GitHubAutoCommit(mcp_router=mcp_router)
 markdown_sync = MarkdownQdrantSync()
+
+# Phase 4: Remote model and API tooling
+hosted_proxy = HostedProxyClient()
+date_parser = NaturalDateParser()
+tts_service = TTSNotificationService(enabled=False)  # Disabled by default, enable via API
 
 
 @app.on_event("startup")
@@ -659,6 +667,195 @@ async def auto_commit_memory(frequency: str = "daily"):
     """Auto-commit memory store changes."""
     result = github_auto_commit.auto_commit_memory_changes(frequency=frequency)
     return result
+
+
+# ============================================================================
+# Phase 4: Remote Model & API Tooling Endpoints
+# ============================================================================
+
+
+@app.post("/proxy/consent/grant")
+async def grant_proxy_consent(
+    user_id: str,
+    provider: str,
+    session_only: bool = False,
+    all_providers: bool = False,
+):
+    """Grant consent for hosted proxy usage.
+
+    Args:
+        user_id: User identifier
+        provider: Provider name (e.g., "openai", "anthropic")
+        session_only: If True, consent is only for current session
+        all_providers: If True, grant consent for all providers
+    """
+    hosted_proxy.grant_consent(user_id, provider, session_only, all_providers)
+    return {"status": "granted", "user_id": user_id, "provider": provider}
+
+
+@app.post("/proxy/consent/revoke")
+async def revoke_proxy_consent(user_id: str, session_only: bool = False):
+    """Revoke consent for hosted proxy usage."""
+    hosted_proxy.revoke_consent(user_id, session_only)
+    return {"status": "revoked", "user_id": user_id}
+
+
+@app.get("/proxy/consent/{user_id}")
+async def get_proxy_consent_status(user_id: str):
+    """Get consent status for a user."""
+    status = hosted_proxy.get_consent_status(user_id)
+    return status
+
+
+@app.get("/proxy/consents")
+async def list_proxy_consents():
+    """List all consent records."""
+    consents = hosted_proxy.list_consents()
+    return {"consents": consents}
+
+
+@app.post("/proxy/call")
+async def call_hosted_proxy(
+    user_id: str,
+    provider: str,
+    prompt: str,
+    model: str | None = None,
+    max_tokens: int = 1000,
+    temperature: float = 0.7,
+):
+    """Call hosted proxy with consent check.
+
+    Requires prior consent via /proxy/consent/grant.
+    """
+    try:
+        result = hosted_proxy.call_with_consent(
+            user_id=user_id,
+            provider=provider,
+            prompt=prompt,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+        return result
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/pasteback/store")
+async def store_pasteback_response(
+    thread_id: str,
+    prompt: str,
+    response: str,
+    model: str,
+    provider: str | None = None,
+    url: str | None = None,
+    cost: float | None = None,
+    tokens: int | None = None,
+    metadata: dict | None = None,
+):
+    """Store pasted-back response from cloud LLM with source annotations."""
+    pasteback_handler.store_with_metadata(
+        thread_id=thread_id,
+        prompt=prompt,
+        response=response,
+        model=model,
+        provider=provider,
+        url=url,
+        cost=cost,
+        tokens=tokens,
+        metadata=metadata,
+    )
+    return {"status": "stored", "thread_id": thread_id}
+
+
+@app.get("/pasteback/responses/{thread_id}")
+async def get_annotated_responses(thread_id: str):
+    """Retrieve annotated responses from memory."""
+    responses = pasteback_handler.get_annotated_responses(thread_id, memory_handler)
+    return {"responses": [{"key": r["key"], "response": r["response"], "source": r["source"].to_dict()} for r in responses]}
+
+
+@app.post("/date/parse")
+async def parse_natural_date(text: str):
+    """Parse natural language date expression.
+
+    Examples:
+        - "tomorrow at 3pm"
+        - "in 2 hours"
+        - "next Friday"
+    """
+    result = date_parser.parse(text)
+    if result:
+        return result.to_dict()
+    else:
+        raise HTTPException(status_code=400, detail="Could not parse date expression")
+
+
+@app.post("/date/parse-duration")
+async def parse_duration(text: str):
+    """Parse duration expression into seconds."""
+    seconds = date_parser.parse_duration(text)
+    if seconds is not None:
+        return {"duration_seconds": seconds, "original_text": text}
+    else:
+        raise HTTPException(status_code=400, detail="Could not parse duration")
+
+
+@app.post("/reminders/create-with-nlp")
+async def create_reminder_with_nlp(thread_id: str, text: str, message: str):
+    """Create reminder using natural language date parsing.
+
+    Args:
+        thread_id: Thread identifier
+        text: Natural language date expression (e.g., "tomorrow at 3pm")
+        message: Reminder message
+    """
+    result = date_parser.parse(text)
+    if not result:
+        raise HTTPException(status_code=400, detail="Could not parse date expression")
+
+    reminder_manager.set_reminder(thread_id, message, result.timestamp)
+    return {
+        "status": "created",
+        "timestamp": result.timestamp,
+        "datetime": result.datetime_obj.isoformat(),
+        "message": message,
+    }
+
+
+@app.post("/tts/speak")
+async def speak_text(text: str, blocking: bool = False):
+    """Speak text using TTS."""
+    if not tts_service.enabled:
+        raise HTTPException(status_code=503, detail="TTS service not enabled")
+
+    success = tts_service.speak_response(text, blocking=blocking)
+    return {"success": success, "text": text}
+
+
+@app.post("/tts/notify")
+async def send_tts_notification(message: str, sound: str = "notification"):
+    """Send notification with TTS."""
+    if not tts_service.enabled:
+        raise HTTPException(status_code=503, detail="TTS service not enabled")
+
+    tts_service.notify_with_speech(message, sound=sound)
+    return {"status": "sent", "message": message}
+
+
+@app.post("/tts/enable")
+async def enable_tts(enabled: bool = True):
+    """Enable or disable TTS service."""
+    tts_service.set_enabled(enabled)
+    return {"status": "enabled" if enabled else "disabled"}
+
+
+@app.get("/tts/status")
+async def get_tts_status():
+    """Get TTS service status."""
+    return {"enabled": tts_service.enabled}
 
 
 @app.websocket("/ws/chat")
