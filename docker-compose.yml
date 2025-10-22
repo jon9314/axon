@@ -18,6 +18,9 @@ services:
       CALC_MCP_URL: http://mcp_servers:9003
       MARKDOWN_MCP_URL: http://mcp_servers:9004
       GITHUB_MCP_URL: http://mcp_servers:9005
+      AXON_DATABASE__POSTGRES_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AXON_DATABASE__QDRANT_HOST: qdrant
+      AXON_DATABASE__REDIS_URL: redis://redis:6379/0
     depends_on:
       postgres:
         condition: service_healthy
