@@ -309,7 +309,7 @@ class HostedProxyClient:
         Returns:
             Dictionary mapping user IDs to consent status
         """
-        result = {}
+        result: dict[str, dict[str, Any]] = {}
 
         # Add persisted consents
         for user_id, record in self.consent_records.items():

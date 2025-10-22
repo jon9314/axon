@@ -816,7 +816,12 @@ async def create_reminder_with_nlp(thread_id: str, text: str, message: str):
     if not result:
         raise HTTPException(status_code=400, detail="Could not parse date expression")
 
-    reminder_manager.set_reminder(thread_id, message, result.timestamp)
+    # Calculate delay from now
+    delay_seconds = result.timestamp - int(time.time())
+    if delay_seconds < 0:
+        raise HTTPException(status_code=400, detail="Cannot schedule reminder in the past")
+
+    reminder_manager.schedule(message, delay_seconds, thread_id)
     return {
         "status": "created",
         "timestamp": result.timestamp,
