@@ -26,6 +26,13 @@ class MemoryLike(Protocol):
         tags: Iterable[str] | None = None,
     ) -> None: ...
 
+    def list_facts(
+        self,
+        thread_id: str,
+        tag: str | None = None,
+        domain: str | None = None,
+    ) -> list[tuple[str, str, str | None, bool, list[str]]]: ...
+
 
 class SourceAnnotation:
     """Metadata about the source of a pasted response."""
