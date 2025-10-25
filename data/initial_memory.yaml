@@ -24,7 +24,7 @@ facts:
     domain: project
   - thread_id: default_thread
     key: sprint_end_date
-    value: 2025-11-01
+    value: "2025-11-01"
     identity: default_user
     domain: project
   - thread_id: default_thread
