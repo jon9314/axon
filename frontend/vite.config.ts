@@ -8,6 +8,18 @@ const pwaManifest = manifest as Partial<ManifestOptions>
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      '/': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/ws/chat': {
+        target: 'ws://localhost:8000',
+        ws: true,
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

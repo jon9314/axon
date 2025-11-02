@@ -42,8 +42,7 @@ function App() {
     // --- CORRECTED WEBSOCKET URL ---
     // This now uses the same hostname as the browser's address bar,
     // ensuring it connects to the correct server.
-    const wsHost = window.location.hostname;
-    const wsUrl = `ws://${wsHost}:8000/ws/chat`;
+    const wsUrl = '/ws/chat';
     
     console.log(`Attempting to connect to WebSocket at: ${wsUrl}`);
     ws.current = new WebSocket(wsUrl);
