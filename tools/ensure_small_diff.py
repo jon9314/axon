@@ -11,7 +11,24 @@ def run(cmd: list[str]) -> list[str]:
 
 
 def main() -> int:
-    base_files = set(run(["git", "diff", "--name-only", "main...HEAD"]))
+    # Get current branch name
+    current_branch_result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    current_branch = current_branch_result.stdout.strip() if current_branch_result.returncode == 0 else ""
+
+    # Determine comparison base
+    # If we're on main/master, compare to previous commit; otherwise compare to main
+    if current_branch in ("main", "master"):
+        # On main branch in CI, we just pushed changes, so compare to previous commit
+        base_ref = "HEAD~1"
+    else:
+        base_ref = "main"
+
+    base_files = set(run(["git", "diff", "--name-only", f"{base_ref}...HEAD"]))
     modified = set(run(["git", "ls-files", "-m"]))
     extra = [f for f in modified if f not in base_files]
     if len(extra) > 100:
