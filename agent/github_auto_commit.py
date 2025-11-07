@@ -37,9 +37,7 @@ class GitHubAutoCommit:
         except Exception:
             return False
 
-    def create_patch(
-        self, files: list[str], message: str, branch: str | None = None
-    ) -> dict:
+    def create_patch(self, files: list[str], message: str, branch: str | None = None) -> dict:
         """Create a git patch with specified files.
 
         Args:
@@ -179,7 +177,9 @@ class GitHubAutoCommit:
 
         try:
             # Create branch
-            self.mcp_router.call("github", {"command": "branch", "name": branch_name, "create": True})
+            self.mcp_router.call(
+                "github", {"command": "branch", "name": branch_name, "create": True}
+            )
 
             # Commit changes
             commit_result = self.create_patch(files, message, branch=branch_name)

@@ -1,6 +1,5 @@
 """Tests for text-to-speech and audio notifications."""
 
-
 from agent.audio_notifier import AudioNotifier, TTSEngine, TTSNotificationService
 
 

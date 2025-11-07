@@ -66,9 +66,7 @@ class MarkdownQdrantSync:
 
         return embedding[:384]
 
-    def sync_markdown_to_qdrant(
-        self, note_name: str | None = None, force: bool = False
-    ) -> int:
+    def sync_markdown_to_qdrant(self, note_name: str | None = None, force: bool = False) -> int:
         """Sync markdown notes to Qdrant.
 
         Args:
@@ -114,9 +112,7 @@ class MarkdownQdrantSync:
                 logger.info("synced-markdown-to-qdrant", extra={"note": note_id})
 
             except Exception as e:
-                logger.error(
-                    "markdown-sync-error", extra={"note": note_path.name, "error": str(e)}
-                )
+                logger.error("markdown-sync-error", extra={"note": note_path.name, "error": str(e)})
 
         return synced_count
 

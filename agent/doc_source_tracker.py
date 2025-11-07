@@ -183,9 +183,9 @@ class DocSourceTracker:
 
         elif chart_type == "access_bar":
             # Bar chart of most accessed sources
-            sources = sorted(
-                self.sources.values(), key=lambda x: x["access_count"], reverse=True
-            )[:limit]
+            sources = sorted(self.sources.values(), key=lambda x: x["access_count"], reverse=True)[
+                :limit
+            ]
 
             return {
                 "type": "bar",

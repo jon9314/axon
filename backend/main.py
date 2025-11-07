@@ -774,7 +774,12 @@ async def store_pasteback_response(
 async def get_annotated_responses(thread_id: str):
     """Retrieve annotated responses from memory."""
     responses = pasteback_handler.get_annotated_responses(thread_id, memory_handler)
-    return {"responses": [{"key": r["key"], "response": r["response"], "source": r["source"].to_dict()} for r in responses]}
+    return {
+        "responses": [
+            {"key": r["key"], "response": r["response"], "source": r["source"].to_dict()}
+            for r in responses
+        ]
+    }
 
 
 @app.post("/date/parse")

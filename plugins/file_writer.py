@@ -62,7 +62,9 @@ class FileWriterPlugin(Plugin[FileWriteInput, FileWriteOutput]):
             bytes_written = file_path.write_text(data.content)
 
             return FileWriteOutput(
-                success=True, message=f"Successfully wrote to {data.path}", bytes_written=bytes_written
+                success=True,
+                message=f"Successfully wrote to {data.path}",
+                bytes_written=bytes_written,
             )
         except PermissionError as e:
             return FileWriteOutput(

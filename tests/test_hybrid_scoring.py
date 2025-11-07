@@ -23,9 +23,7 @@ class TestHybridScoring:
         mock_vector_store.client = MagicMock()
         mock_vector_store.client.search.return_value = []
 
-        results = mock_vector_store.hybrid_search(
-            "test_collection", [0.1] * 10, llm_confidence=0.8
-        )
+        results = mock_vector_store.hybrid_search("test_collection", [0.1] * 10, llm_confidence=0.8)
 
         assert results == []
 
@@ -114,9 +112,7 @@ class TestHybridScoring:
         # Return in random order
         mock_vector_store.client.search.return_value = [mock_point1, mock_point2, mock_point3]
 
-        results = mock_vector_store.hybrid_search(
-            "test_collection", [0.1] * 10, llm_confidence=0.5
-        )
+        results = mock_vector_store.hybrid_search("test_collection", [0.1] * 10, llm_confidence=0.5)
 
         # Should be sorted highest to lowest
         for i in range(len(results) - 1):

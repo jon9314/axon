@@ -13,9 +13,7 @@ class MockMemoryHandler:
     def __init__(self):
         self.facts = []
 
-    def add_fact(
-        self, thread_id, key, value, identity=None, domain=None, tags=None
-    ):
+    def add_fact(self, thread_id, key, value, identity=None, domain=None, tags=None):
         self.facts.append(
             {
                 "thread_id": thread_id,
@@ -223,12 +221,8 @@ class TestPastebackHandler:
         annotation1 = SourceAnnotation(model="gpt-4", provider="openai", cost=0.03)
         annotation2 = SourceAnnotation(model="claude-3", provider="anthropic", cost=0.05)
 
-        pasteback_handler.store(
-            "test_thread", "Question 1", "Answer 1", "gpt-4", annotation1
-        )
-        pasteback_handler.store(
-            "test_thread", "Question 2", "Answer 2", "claude-3", annotation2
-        )
+        pasteback_handler.store("test_thread", "Question 1", "Answer 1", "gpt-4", annotation1)
+        pasteback_handler.store("test_thread", "Question 2", "Answer 2", "claude-3", annotation2)
 
         # Retrieve responses
         responses = pasteback_handler.get_annotated_responses("test_thread", memory_handler)
@@ -239,9 +233,7 @@ class TestPastebackHandler:
         assert responses[1]["response"] == "Answer 2"
         assert responses[1]["source"].model == "claude-3"
 
-    def test_get_annotated_responses_filters_non_annotated(
-        self, pasteback_handler, memory_handler
-    ):
+    def test_get_annotated_responses_filters_non_annotated(self, pasteback_handler, memory_handler):
         """Should only return annotated responses."""
         # Store one annotated and one plain response
         annotation = SourceAnnotation(model="gpt-4")

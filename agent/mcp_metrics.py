@@ -207,7 +207,9 @@ class MCPMetrics:
         """
         return [self.get_server_stats(server) for server in self.server_stats.keys()]
 
-    def get_latency_percentiles(self, server_name: str, percentiles: list[int] | None = None) -> dict:
+    def get_latency_percentiles(
+        self, server_name: str, percentiles: list[int] | None = None
+    ) -> dict:
         """Calculate latency percentiles for a server.
 
         Args:
@@ -341,9 +343,7 @@ class MCPMetrics:
                 report.append(f"- **Latency Percentiles**: {percentiles}\n")
 
             if stats["consecutive_failures"] > 0:
-                report.append(
-                    f"- **⚠️ Consecutive Failures**: {stats['consecutive_failures']}\n"
-                )
+                report.append(f"- **⚠️ Consecutive Failures**: {stats['consecutive_failures']}\n")
 
             report.append("\n")
 

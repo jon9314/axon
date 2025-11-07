@@ -171,7 +171,12 @@ class NaturalDateParser:
                 datetime_obj=target_date,
                 original_text=text,
                 confidence=0.95,
-                components={"type": "named_day", "day": "yesterday", "hour": hour, "minute": minute},
+                components={
+                    "type": "named_day",
+                    "day": "yesterday",
+                    "hour": hour,
+                    "minute": minute,
+                },
             )
 
         # Handle "tonight" specifically (assume 8 PM if no time given)
@@ -209,7 +214,9 @@ class NaturalDateParser:
                     elif am_pm.lower() == "am" and hour == 12:
                         hour = 0
 
-                target_time = self.base_time.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                target_time = self.base_time.replace(
+                    hour=hour, minute=minute, second=0, microsecond=0
+                )
 
                 # If the time has already passed today, assume tomorrow
                 if target_time < self.base_time:

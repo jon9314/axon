@@ -1,6 +1,5 @@
 """Tests for LLM confidence calculation."""
 
-
 from agent.llm_router import LLMRouter
 
 
@@ -43,7 +42,9 @@ class TestLLMConfidence:
         """Structured responses (lists, code) should have higher confidence."""
         router = LLMRouter()
         # Use responses with similar keywords but different structure
-        plain_response = "The methods include option alpha, option beta, and option gamma for completion."
+        plain_response = (
+            "The methods include option alpha, option beta, and option gamma for completion."
+        )
         structured_response = """The methods include:
         1. Option alpha
         2. Option beta

@@ -18,7 +18,9 @@ def main() -> int:
         text=True,
         check=False,
     )
-    current_branch = current_branch_result.stdout.strip() if current_branch_result.returncode == 0 else ""
+    current_branch = (
+        current_branch_result.stdout.strip() if current_branch_result.returncode == 0 else ""
+    )
 
     # Determine comparison base
     # If we're on main/master, compare to previous commit; otherwise compare to main

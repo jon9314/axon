@@ -196,7 +196,9 @@ class HostedProxyClient:
                 del self.consent_records[user_id]
                 self._save_consent()
 
-        logger.info("proxy-consent-revoked", extra={"user_id": user_id, "session_only": session_only})
+        logger.info(
+            "proxy-consent-revoked", extra={"user_id": user_id, "session_only": session_only}
+        )
 
     def call_with_consent(
         self,

@@ -1,6 +1,5 @@
 """Tests for Phase 3 features: timestamping, markdown sync, doc tracking."""
 
-
 import pytest
 
 from agent.doc_source_tracker import DocSourceTracker
@@ -66,9 +65,7 @@ class TestDocSourceTracker:
     def test_track_source(self, tracker):
         """Should track a documentation source."""
         tracker.track_source(
-            url="https://example.com/docs",
-            title="Example Docs",
-            category="Tutorial"
+            url="https://example.com/docs", title="Example Docs", category="Tutorial"
         )
 
         source = tracker.get_source("https://example.com/docs")
