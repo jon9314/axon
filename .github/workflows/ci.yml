@@ -38,7 +38,22 @@ jobs:
         run: poetry install --no-interaction --no-root
 
       - name: Run backend checks
-        run: make check
+        run: |
+          echo "=== Running ruff format check ==="
+          poetry run ruff format --check . || exit 1
+          echo "=== Running ruff linter ==="
+          poetry run ruff check . || exit 1
+          echo "=== Installing types ==="
+          poetry run pip install types-pyyaml || true
+          echo "=== Running mypy ==="
+          poetry run mypy . --show-error-codes || exit 1
+          echo "=== Running pytest ==="
+          poetry run pytest -q --tb=short || exit 1
+          echo "=== Running memory tests ==="
+          poetry run pytest -q tests/memory || exit 1
+          echo "=== Running ensure_small_diff ==="
+          poetry run python tools/ensure_small_diff.py || exit 1
+          echo "=== All checks passed ==="
 
   frontend:
     runs-on: ubuntu-latest
