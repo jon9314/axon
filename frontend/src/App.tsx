@@ -26,7 +26,8 @@ function App() {
   const [newTags, setNewTags] = useState('');
   const [cloudPrompt, setCloudPrompt] = useState<{model: string; prompt: string} | null>(null);
   const [pasteValue, setPasteValue] = useState('');
-  const [selectedModel, setSelectedModel] = useState('openrouter/horizon-beta');
+  const [models, setModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState('');
   const ws = useRef<WebSocket | null>(null);
   const sendMcp = (tool: string, args: Record<string, unknown>) => {
     if (ws.current?.readyState !== WebSocket.OPEN) return;
@@ -71,6 +72,16 @@ function App() {
       .then((res) => res.json())
       .then((data) => setMemoryEntries(data.facts || []))
       .catch((err) => console.error('Failed to load memory', err));
+
+    fetch('/models')
+      .then((res) => res.json())
+      .then((data) => {
+        setModels(data.models || []);
+        if (data.models && data.models.length > 0) {
+          setSelectedModel(data.models[0]);
+        }
+      })
+      .catch((err) => console.error('Failed to load models', err));
 
     return () => {
       ws.current?.close();
@@ -135,8 +146,11 @@ function App() {
             placeholder="Type your message..."
           />
           <select value={selectedModel} onChange={(e)=>setSelectedModel(e.target.value)}>
-            <option value="openrouter/horizon-beta">openrouter/horizon-beta</option>
-            <option value="z-ai/glm-4.5-air:free">z-ai/glm-4.5-air:free</option>
+            {models.map((model) => (
+              <option key={model} value={model}>
+                {model}
+              </option>
+            ))}
           </select>
           <button onClick={handleSendMessage}>Send</button>
           <button onClick={() => sendMcp('time', {command: 'now'})}>Time</button>
