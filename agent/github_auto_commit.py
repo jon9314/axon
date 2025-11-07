@@ -48,7 +48,7 @@ class GitHubAutoCommit:
         Returns:
             Dictionary with commit info
         """
-        if not self.enabled:
+        if not self.enabled or not self.mcp_router:
             logger.warning("GitHub MCP not available")
             return {"status": "error", "message": "GitHub MCP not configured"}
 
@@ -95,7 +95,7 @@ class GitHubAutoCommit:
         Returns:
             Dictionary with commit info
         """
-        if not self.enabled:
+        if not self.enabled or not self.mcp_router:
             return {"status": "error", "message": "GitHub MCP not configured"}
 
         try:
@@ -135,7 +135,7 @@ class GitHubAutoCommit:
         Returns:
             Dictionary with commit status
         """
-        if not self.enabled:
+        if not self.enabled or not self.mcp_router:
             return {"status": "disabled"}
 
         try:
@@ -172,7 +172,7 @@ class GitHubAutoCommit:
         Returns:
             Dictionary with operation status
         """
-        if not self.enabled:
+        if not self.enabled or not self.mcp_router:
             return {"status": "error", "message": "GitHub MCP not configured"}
 
         try:
@@ -215,7 +215,7 @@ class GitHubAutoCommit:
         Returns:
             List of commit dictionaries
         """
-        if not self.enabled:
+        if not self.enabled or not self.mcp_router:
             return []
 
         try:
@@ -239,7 +239,7 @@ class GitHubAutoCommit:
         Returns:
             Dictionary with rollback status
         """
-        if not self.enabled:
+        if not self.enabled or not self.mcp_router:
             return {"status": "error", "message": "GitHub MCP not configured"}
 
         try:
