@@ -4,7 +4,16 @@ import pytest
 
 from memory.speaker_embedding import SpeakerEmbeddingManager, SpeakerProfile
 
+# Check if numpy is available
+try:
+    import numpy
 
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+
+
+@pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy not installed (optional dependency)")
 class TestSpeakerEmbedding:
     """Test speaker recognition functionality."""
 

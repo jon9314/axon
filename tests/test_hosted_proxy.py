@@ -17,7 +17,9 @@ def temp_consent_db(tmp_path):
 @pytest.fixture
 def proxy_client(temp_consent_db):
     """Hosted proxy client with temporary database."""
-    return HostedProxyClient(consent_db_path=str(temp_consent_db))
+    return HostedProxyClient(
+        consent_db_path=str(temp_consent_db), proxy_url="http://test-proxy.example.com"
+    )
 
 
 class TestConsentRecord:
