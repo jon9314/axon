@@ -1,16 +1,13 @@
 """Tests for speaker embedding and recognition."""
 
+import importlib.util
+
 import pytest
 
 from memory.speaker_embedding import SpeakerEmbeddingManager, SpeakerProfile
 
 # Check if numpy is available
-try:
-    import numpy
-
-    NUMPY_AVAILABLE = True
-except ImportError:
-    NUMPY_AVAILABLE = False
+NUMPY_AVAILABLE = importlib.util.find_spec("numpy") is not None
 
 
 @pytest.mark.skipif(not NUMPY_AVAILABLE, reason="numpy not installed (optional dependency)")
