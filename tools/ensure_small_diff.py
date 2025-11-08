@@ -42,7 +42,9 @@ def main() -> int:
         base_ref = "main"
 
     # Try to get base files - may fail in shallow clones (CI)
-    base_files_result = run(["git", "diff", "--name-only", f"{base_ref}...HEAD"], allow_failure=True)
+    base_files_result = run(
+        ["git", "diff", "--name-only", f"{base_ref}...HEAD"], allow_failure=True
+    )
     if base_files_result is None:
         print(
             f"⚠️  Skipping diff check: cannot access {base_ref} (shallow clone or missing history)",
